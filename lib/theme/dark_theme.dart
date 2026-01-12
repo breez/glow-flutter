@@ -87,9 +87,21 @@ final FilledButtonThemeData darkFilledButtonTheme = FilledButtonThemeData(
   ),
 );
 
+final ElevatedButtonThemeData darkElevatedButtonTheme = ElevatedButtonThemeData(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: BreezColors.primaryLight,
+    foregroundColor: Colors.white,
+    minimumSize: const Size(0, 48),
+    elevation: 0.0,
+    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  ),
+);
+
 final OutlinedButtonThemeData darkOutlinedButtonTheme = OutlinedButtonThemeData(
   style: OutlinedButton.styleFrom(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    minimumSize: const Size(0, 48),
   ),
 );
 
@@ -203,6 +215,7 @@ ThemeData buildDarkTheme() {
     appBarTheme: darkAppBarTheme,
     bottomAppBarTheme: darkBottomAppBarTheme,
     filledButtonTheme: darkFilledButtonTheme,
+    elevatedButtonTheme: darkElevatedButtonTheme,
     outlinedButtonTheme: darkOutlinedButtonTheme,
     sliderTheme: darkSliderTheme,
     floatingActionButtonTheme: darkFabTheme,
