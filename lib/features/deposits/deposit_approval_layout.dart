@@ -115,17 +115,18 @@ class DepositApprovalLayout extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                     child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: colorScheme.onSurface.withValues(alpha: .4)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
+                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(36)),
                       onPressed: onReject,
                       child: const Text('REJECT'),
                     ),
                   ),
                   const SizedBox(width: 32),
                   Expanded(
-                    child: ElevatedButton(onPressed: onApprove, child: const Text('ACCEPT')),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(36)),
+                      onPressed: onApprove,
+                      child: const Text('APPROVE'),
+                    ),
                   ),
                 ],
               ),
@@ -142,28 +143,35 @@ class DepositApprovalLayout extends StatelessWidget {
 
     // Get error message
     final String errorMessage = ErrorParser.parseError(error);
-
-    return CardWrapper(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Transaction row with expandable detail
-          ExpandableDetailRow(
-            title: 'Transaction',
-            value: pendingDeposit.deposit.txid,
-            isExpanded: true,
-            labelAutoSizeGroup: _labelGroup,
-            linkUrl: 'https://mempool.space/tx/${pendingDeposit.deposit.txid}',
-            linkTooltip: 'View on blockchain explorer',
+    return Column(
+      children: <Widget>[
+        CardWrapper(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              // Transaction row with expandable detail
+              ExpandableDetailRow(
+                title: 'Transaction',
+                value: pendingDeposit.deposit.txid,
+                isExpanded: true,
+                labelAutoSizeGroup: _labelGroup,
+                linkUrl: 'https://mempool.space/tx/${pendingDeposit.deposit.txid}',
+                linkTooltip: 'View on blockchain explorer',
+              ),
+              const Divider(
+                height: 32.0,
+                color: Color.fromRGBO(40, 59, 74, 0.5),
+                indent: 0.0,
+                endIndent: 0.0,
+              ),
+              // Amount row
+              _buildAmountRow(context),
+            ],
           ),
-          const Divider(height: 32.0, color: Color.fromRGBO(40, 59, 74, 0.5), indent: 0.0, endIndent: 0.0),
-          // Amount row
-          _buildAmountRow(context),
-          const Divider(height: 32.0, color: Color.fromRGBO(40, 59, 74, 0.5), indent: 0.0, endIndent: 0.0),
-          // Error message display
-          WarningBox.text(message: errorMessage, textStyle: textTheme.bodySmall),
-        ],
-      ),
+        ),
+
+        WarningBox.text(message: errorMessage, textStyle: textTheme.bodySmall),
+      ],
     );
   }
 
