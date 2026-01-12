@@ -13,17 +13,17 @@ final AutoSizeGroup _labelGroup = AutoSizeGroup();
 /// Layout for deposit approval (rendering)
 ///
 /// Shows deposit details and gives user option to approve or reject the claim fee
-/// If onApprove and onReject are null, displays error in unactionable state
+/// If onAccept and onReject are null, displays error in unactionable state
 class DepositApprovalLayout extends StatelessWidget {
   const DepositApprovalLayout({
     required this.pendingDeposit,
-    required this.onApprove,
+    required this.onAccept,
     required this.onReject,
     super.key,
   });
 
   final PendingDepositPayment pendingDeposit;
-  final VoidCallback? onApprove;
+  final VoidCallback? onAccept;
   final VoidCallback? onReject;
 
   @override
@@ -124,8 +124,8 @@ class DepositApprovalLayout extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(36)),
-                      onPressed: onApprove,
-                      child: const Text('APPROVE'),
+                      onPressed: onAccept,
+                      child: const Text('ACCEPT'),
                     ),
                   ),
                 ],

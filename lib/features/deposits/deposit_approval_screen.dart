@@ -37,7 +37,7 @@ class DepositApprovalScreen extends ConsumerWidget {
 
         return DepositApprovalLayout(
           pendingDeposit: updatedDeposit,
-          onApprove: updatedDeposit.hasFeeRequirement
+          onAccept: updatedDeposit.hasFeeRequirement
               ? () => _handleApprove(context, ref, updatedDeposit)
               : null,
           onReject: updatedDeposit.hasFeeRequirement
@@ -47,7 +47,7 @@ class DepositApprovalScreen extends ConsumerWidget {
       },
       loading: () => DepositApprovalLayout(
         pendingDeposit: pendingDeposit,
-        onApprove: pendingDeposit.hasFeeRequirement
+        onAccept: pendingDeposit.hasFeeRequirement
             ? () => _handleApprove(context, ref, pendingDeposit)
             : null,
         onReject: pendingDeposit.hasFeeRequirement
@@ -59,7 +59,7 @@ class DepositApprovalScreen extends ConsumerWidget {
         // Show original deposit even on error
         return DepositApprovalLayout(
           pendingDeposit: pendingDeposit,
-          onApprove: pendingDeposit.hasFeeRequirement
+          onAccept: pendingDeposit.hasFeeRequirement
               ? () => _handleApprove(context, ref, pendingDeposit)
               : null,
           onReject: pendingDeposit.hasFeeRequirement
