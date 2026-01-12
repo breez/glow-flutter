@@ -1,7 +1,10 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:glow/features/deposits/unclaimed_deposits_screen.dart';
+import 'package:glow/features/deposits/deposit_approval_screen.dart';
+import 'package:glow/features/deposits/models/pending_deposit_payment.dart';
+import 'package:glow/features/deposits/refund/refund_address_screen.dart';
+import 'package:glow/features/deposits/refunds_screen.dart';
 import 'package:glow/features/developers/developers_screen.dart';
 import 'package:glow/features/fiat_currencies/fiat_currency_screen.dart';
 import 'package:glow/features/lnurl/screens/lnurl_auth_screen.dart';
@@ -63,7 +66,9 @@ class AppRoutes {
   static const String sendSparkInvoice = '/send/spark/invoice';
 
   // Deposit claim routes
-  static const String unclaimedDeposits = '/deposit/list';
+  static const String refunds = '/refunds';
+  static const String depositApproval = '/deposit/approval';
+  static const String depositRefund = '/deposit/refund';
 
   // Receive payment routes
   static const String receiveScreen = '/receive';
@@ -197,9 +202,23 @@ class AppRoutes {
         );
 
       // Deposit claim routes
-      case AppRoutes.unclaimedDeposits:
-        return MaterialPageRoute<UnclaimedDepositsScreen>(
-          builder: (_) => const UnclaimedDepositsScreen(),
+      case AppRoutes.refunds:
+        return MaterialPageRoute<RefundsScreen>(
+          builder: (_) => const RefundsScreen(),
+          settings: settings,
+        );
+
+      case AppRoutes.depositApproval:
+        final PendingDepositPayment args = settings.arguments as PendingDepositPayment;
+        return MaterialPageRoute<Widget>(
+          builder: (_) => DepositApprovalScreen(pendingDeposit: args),
+          settings: settings,
+        );
+
+      case AppRoutes.depositRefund:
+        final DepositInfo args = settings.arguments as DepositInfo;
+        return MaterialPageRoute<Widget>(
+          builder: (_) => RefundScreen(deposit: args),
           settings: settings,
         );
 
