@@ -86,6 +86,7 @@ class _RefundItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardWrapper(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -189,6 +190,7 @@ class _RefundItemCardAction extends StatelessWidget {
       padding: const EdgeInsets.only(top: 16.0),
       child: Center(
         child: ElevatedButton(
+          style: ElevatedButton.styleFrom(minimumSize: const Size(0, 36)),
           onPressed: onAction,
           child: Text('CONTINUE', style: themeData.textTheme.labelLarge),
         ),
