@@ -100,6 +100,7 @@ final ElevatedButtonThemeData darkElevatedButtonTheme = ElevatedButtonThemeData(
 
 final OutlinedButtonThemeData darkOutlinedButtonTheme = OutlinedButtonThemeData(
   style: OutlinedButton.styleFrom(
+    side: BorderSide(color: Colors.white.withValues(alpha: .4)),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     minimumSize: const Size(0, 48),
   ),
