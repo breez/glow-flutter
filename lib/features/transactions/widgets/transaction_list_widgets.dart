@@ -54,9 +54,9 @@ class TransactionListItem extends StatelessWidget {
 
   Widget _buildIcon(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final bool isCompleted = transaction.payment.status == PaymentStatus.completed;
+    final bool isCompleted = transaction.payment?.status == PaymentStatus.completed;
     final Color color = transaction.isReceive
-        ? Colors.yellow
+        ? Colors.black
         : isCompleted
         ? colorScheme.surface
         : const Color(0xb3303234);
@@ -89,23 +89,25 @@ class TransactionListItem extends StatelessWidget {
   Widget _buildSubtitle(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color subtitleColor = colorScheme.onSurface;
-    final Color statusColor = _getStatusColor(transaction.payment.status);
+    final Color statusColor = _getStatusColor(transaction.payment?.status);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text(
-          transaction.formattedTime,
-          style: TextStyle(
-            color: subtitleColor.withValues(alpha: .7),
-            fontSize: 10.5,
-            fontWeight: FontWeight.w400,
-            height: 1.16,
-            letterSpacing: 0.39,
+        if (transaction.formattedTime.isNotEmpty) ...<Widget>[
+          Text(
+            transaction.formattedTime,
+            style: TextStyle(
+              color: subtitleColor.withValues(alpha: .7),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w400,
+              height: 1.16,
+              letterSpacing: 0.39,
+            ),
           ),
-        ),
-        if (transaction.payment.status != PaymentStatus.completed) ...<Widget>[
           const SizedBox(width: 8),
+        ],
+        if (transaction.payment?.status != PaymentStatus.completed) ...<Widget>[
           Text(
             transaction.formattedStatus,
             style: TextStyle(
@@ -125,8 +127,8 @@ class TransactionListItem extends StatelessWidget {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color amountColor = colorScheme.onSurface;
 
-    final bool hasFees = transaction.payment.fees > BigInt.zero;
-    final bool isPending = transaction.payment.status == PaymentStatus.pending;
+    final bool hasFees = (transaction.payment?.fees ?? BigInt.zero) > BigInt.zero;
+    final bool isPending = transaction.payment?.status == PaymentStatus.pending;
 
     return SizedBox(
       height: 44,
@@ -148,7 +150,7 @@ class TransactionListItem extends StatelessWidget {
           ),
           if (hasFees && !isPending)
             Text(
-              'FEE ${transaction.payment.fees}',
+              'FEE ${transaction.payment?.fees ?? BigInt.zero}',
               style: TextStyle(
                 color: amountColor.withValues(alpha: .7),
                 fontSize: 10.5,
@@ -162,7 +164,10 @@ class TransactionListItem extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(PaymentStatus status) {
+  Color _getStatusColor(PaymentStatus? status) {
+    if (status == null) {
+      return const Color(0xff4D88EC); // Default to pending color for deposits
+    }
     return switch (status) {
       PaymentStatus.completed => Colors.green,
       PaymentStatus.pending => const Color(0xff4D88EC),
