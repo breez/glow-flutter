@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:glow/features/deposits/models/pending_deposit_payment.dart';
+import 'package:glow/features/deposits/providers/pending_deposits_provider.dart';
 import 'package:glow/features/profile/models/profile.dart';
 import 'package:glow/features/profile/widgets/profile_avatar.dart';
 import 'package:glow/features/profile/widgets/profile_editor_dialog.dart';
@@ -10,12 +12,19 @@ import 'package:glow/features/wallet/providers/wallet_provider.dart';
 import 'package:glow/routing/app_routes.dart';
 import 'package:glow/theme/colors.dart';
 
-class HomeDrawer extends StatelessWidget {
+class HomeDrawer extends ConsumerWidget {
   const HomeDrawer({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData themeData = Theme.of(context);
+    final AsyncValue<List<PendingDepositPayment>> depositsNeedingAttention = ref.watch(
+      depositsNeedingAttentionProvider,
+    );
+
+    // Check if there are any refundable deposits
+    final bool hasRefundables = depositsNeedingAttention.value?.isNotEmpty ?? false;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: Theme.of(context).appBarTheme.systemOverlayStyle!.copyWith(
         systemNavigationBarColor: themeData.colorScheme.surfaceContainer,
@@ -29,6 +38,18 @@ class HomeDrawer extends StatelessWidget {
                 children: <Widget>[
                   _DrawerHeader(),
                   const SizedBox(height: 16),
+                  // Show "Get Refund" item above Balance when there are refundables
+                  if (hasRefundables) ...<Widget>[
+                    _DrawerItem(
+                      title: 'Get Refund',
+                      iconAssetPath: 'assets/icon/get_refund.png',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, AppRoutes.refunds);
+                      },
+                    ),
+                    const Divider(indent: 16, endIndent: 16),
+                  ],
                   _DrawerItem(
                     title: 'Balance',
                     icon: Icons.account_balance_wallet_outlined,
@@ -151,11 +172,21 @@ class _DrawerHeader extends ConsumerWidget {
 
 class _DrawerItem extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final IconData? icon;
+  final String? iconAssetPath;
   final bool isSelected;
   final VoidCallback? onTap;
 
-  const _DrawerItem({required this.title, required this.icon, this.isSelected = false, this.onTap});
+  const _DrawerItem({
+    required this.title,
+    this.icon,
+    this.iconAssetPath,
+    this.isSelected = false,
+    this.onTap,
+  }) : assert(
+         icon != null || iconAssetPath != null,
+         'Either icon or iconAssetPath must be provided',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +205,9 @@ class _DrawerItem extends StatelessWidget {
           ),
           leading: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Icon(icon, size: 26),
+            child: iconAssetPath != null
+                ? Image.asset(iconAssetPath!, width: 26, height: 26, color: Colors.white)
+                : Icon(icon, size: 26),
           ),
           title: Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(title)),
           onTap: onTap,
