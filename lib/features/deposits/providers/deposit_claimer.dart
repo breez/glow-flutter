@@ -20,7 +20,8 @@ class DepositClaimer {
   }
 
   /// Formats deposit claim error for user-friendly display
-  String formatError(DepositClaimError error) {
+  /// Pass currentFee to check if the error is still valid with current settings
+  String formatError(DepositClaimError error, {MaxFee? currentFee}) {
     return error.when(
       maxDepositClaimFeeExceeded:
           (
@@ -30,14 +31,31 @@ class DepositClaimer {
             BigInt requiredFeeSats,
             BigInt requiredFeeRateSatPerVbyte,
           ) {
-            final String maxFeeStr = (maxFee != null)
-                ? ' (your max: ${formatMaxFee(maxFee)}). '
-                : '';
-            return 'Fee exceeds limit: $requiredFeeSats sats needed$maxFeeStr'
-                'Tap "Retry Claim" after increasing your maximum deposit claim fee rate(sat/vByte) to at least $requiredFeeRateSatPerVbyte sat/vBye.';
+            // Check if current fee is sufficient
+            if (currentFee != null) {
+              final bool isFeeSufficient = currentFee.when(
+                rate: (BigInt rate) => rate >= requiredFeeRateSatPerVbyte,
+                fixed: (BigInt fixed) => fixed >= requiredFeeSats,
+                networkRecommended: (BigInt leewaySatPerVbyte) =>
+                    leewaySatPerVbyte >= requiredFeeRateSatPerVbyte,
+              );
+
+              if (isFeeSufficient) {
+                return 'Ready to claim. Tap "CLAIM" to proceed.';
+              }
+            }
+
+            return 'Fee too low to claim. Tap "CLAIM" to increase your fee limit.';
           },
       missingUtxo: (String tx, int vout) => 'Transaction output not found on chain',
-      generic: (String message) => message,
+      generic: (String message) {
+        // Handle specific generic error cases with user-friendly messages
+        if (message.contains('Calculated fees exceed UTXO amount')) {
+          return 'Amount too small to cover fees. Tap "REFUND" to recover on-chain.';
+        }
+        // For other generic errors, return the original message
+        return message;
+      },
     );
   }
 

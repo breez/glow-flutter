@@ -22,7 +22,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: const AsyncValue<List<DepositCardData>>.loading(),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -32,7 +32,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -51,7 +51,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: const AsyncValue<List<DepositCardData>>.loading(),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -61,7 +61,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -87,7 +87,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -97,7 +97,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -121,7 +121,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -131,7 +131,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -153,7 +153,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -163,7 +163,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -185,7 +185,7 @@ void main() {
                 const AsyncValue<List<DepositInfo>>.data(<DepositInfo>[]),
               ),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) => DepositCard(
                 deposit: cardData.deposit,
@@ -194,7 +194,7 @@ void main() {
                 formattedTxid: cardData.formattedTxid,
                 formattedErrorMessage: cardData.formattedErrorMessage,
                 onRetryClaim: () {},
-                onShowRefundInfo: () {},
+                onRefund: () {},
                 onCopyTxid: () {},
               ),
             ),
@@ -213,7 +213,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) => DepositCard(
                 deposit: cardData.deposit,
@@ -222,7 +222,7 @@ void main() {
                 formattedTxid: cardData.formattedTxid,
                 formattedErrorMessage: cardData.formattedErrorMessage,
                 onRetryClaim: () {},
-                onShowRefundInfo: () {},
+                onRefund: () {},
                 onCopyTxid: () {},
               ),
             ),
@@ -243,7 +243,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: AsyncValue<List<DepositCardData>>.error(error, StackTrace.empty),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -253,7 +253,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -275,7 +275,7 @@ void main() {
                 StackTrace.empty,
               ),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -285,7 +285,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -307,7 +307,7 @@ void main() {
                 StackTrace.empty,
               ),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -317,7 +317,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -342,7 +342,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -352,7 +352,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -364,7 +364,7 @@ void main() {
         expect(find.byType(DepositCard), findsOneWidget);
       });
 
-      testWidgets('passes onShowRefundInfo to deposit cards', (WidgetTester tester) async {
+      testWidgets('passes onRefund to deposit cards', (WidgetTester tester) async {
         final List<DepositInfo> deposits = <DepositInfo>[
           _createMockDeposit(txid: 'txid1', amountSats: BigInt.from(10000)),
         ];
@@ -374,7 +374,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -384,7 +384,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -404,7 +404,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: const AsyncValue<List<DepositCardData>>.loading(),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -414,7 +414,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -431,7 +431,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: const AsyncValue<List<DepositCardData>>.loading(),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -441,7 +441,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -461,7 +461,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: const AsyncValue<List<DepositCardData>>.loading(),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -471,7 +471,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -490,7 +490,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -500,7 +500,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -523,7 +523,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -533,7 +533,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -552,7 +552,7 @@ void main() {
                 StackTrace.empty,
               ),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -562,7 +562,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -587,7 +587,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -597,7 +597,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -628,7 +628,7 @@ void main() {
             UnclaimedDepositsLayout(
               depositsAsync: cardDataAsync(AsyncValue<List<DepositInfo>>.data(deposits)),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -638,7 +638,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },
@@ -664,7 +664,7 @@ void main() {
                 StackTrace.empty,
               ),
               onRetryClaim: (_) async {},
-              onShowRefundInfo: (_) {},
+              onRefund: (_) {},
               onCopyTxid: (_) {},
               depositCardBuilder: (DepositCardData cardData) {
                 return DepositCard(
@@ -674,7 +674,7 @@ void main() {
                   formattedTxid: cardData.formattedTxid,
                   formattedErrorMessage: cardData.formattedErrorMessage,
                   onRetryClaim: () {},
-                  onShowRefundInfo: () {},
+                  onRefund: () {},
                   onCopyTxid: () {},
                 );
               },

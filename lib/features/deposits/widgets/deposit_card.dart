@@ -1,16 +1,26 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:glow/features/deposits/providers/deposit_expansion_provider.dart';
+import 'package:glow/widgets/data_action_button.dart';
+import 'package:glow/widgets/expandable_detail_row.dart';
 import 'package:glow/widgets/warning_box.dart';
 
-/// Individual deposit card widget - Pure UI component
-class DepositCard extends StatefulWidget {
+final AutoSizeGroup _labelGroup = AutoSizeGroup();
+final AutoSizeGroup _buttonGroup = AutoSizeGroup();
+
+/// Individual deposit card widget - Expandable/collapsible design
+/// Collapsed by default to save space when multiple deposits exist
+/// Expansion state is preserved across rebuilds using depositExpansionProvider
+class DepositCard extends ConsumerWidget {
   final DepositInfo deposit;
   final bool hasError;
   final bool hasRefund;
   final String formattedTxid;
   final String? formattedErrorMessage;
   final VoidCallback onRetryClaim;
-  final VoidCallback onShowRefundInfo;
+  final VoidCallback onRefund;
   final VoidCallback onCopyTxid;
 
   const DepositCard({
@@ -19,75 +29,173 @@ class DepositCard extends StatefulWidget {
     required this.hasRefund,
     required this.formattedTxid,
     required this.onRetryClaim,
-    required this.onShowRefundInfo,
+    required this.onRefund,
     required this.onCopyTxid,
     super.key,
     this.formattedErrorMessage,
   });
 
   @override
-  State<DepositCard> createState() => _DepositCardState();
-}
-
-class _DepositCardState extends State<DepositCard> {
-  bool _isExpanded = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
-    final bool hasError = widget.hasError;
+    final Set<String> expandedDeposits = ref.watch(depositExpansionProvider);
+    final String depositKey = getDepositKey(deposit.txid, deposit.vout);
+    final bool isExpanded = expandedDeposits.contains(depositKey);
+
+    void toggleExpansion() {
+      ref.read(depositExpansionProvider.notifier).toggle(depositKey);
+    }
 
     return Card(
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: hasError ? theme.colorScheme.error.withValues(alpha: 0.3) : theme.dividerColor,
-        ),
-      ),
-      child: InkWell(
-        onTap: () => setState(() => _isExpanded = !_isExpanded),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _DepositCardHeader(
-                deposit: widget.deposit,
-                isExpanded: _isExpanded,
-                hasError: hasError,
-              ),
-              if (_isExpanded)
-                _DepositCardExpandedContent(
-                  deposit: widget.deposit,
-                  hasError: widget.hasError,
-                  hasRefund: widget.hasRefund,
-                  formattedTxid: widget.formattedTxid,
-                  formattedErrorMessage: widget.formattedErrorMessage,
-                  onRetryClaim: widget.onRetryClaim,
-                  onShowRefundInfo: widget.onShowRefundInfo,
-                  onCopyTxid: widget.onCopyTxid,
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Transaction header with alternate background - always visible and tappable
+          InkWell(
+            onTap: toggleExpansion,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              decoration: BoxDecoration(
+                color: Color.lerp(theme.colorScheme.surfaceContainer, theme.primaryColorLight, 0.1),
+                borderRadius: BorderRadius.vertical(
+                  top: const Radius.circular(12.0),
+                  bottom: Radius.circular(isExpanded ? 0.0 : 12.0),
                 ),
-            ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      formattedTxid,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    duration: const Duration(milliseconds: 200),
+                    turns: isExpanded ? 0.5 : 0.0,
+                    child: const Icon(Icons.expand_more, size: 24),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
+          // Expanded content with smooth slide-down animation
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return SizeTransition(sizeFactor: animation, axisAlignment: -1.0, child: child);
+            },
+            child: isExpanded
+                ? Padding(
+                    key: const ValueKey<String>('expanded'),
+                    padding: const EdgeInsets.all(16.0),
+                    child: DepositContent(
+                      content: _DepositDetailsContent(
+                        txid: deposit.txid,
+                        formattedTxid: formattedTxid,
+                        amountSats: deposit.amountSats,
+                        vout: deposit.vout,
+                        labelAutoSizeGroup: _labelGroup,
+                        onCopyTxid: onCopyTxid,
+                        hasError: hasError,
+                        formattedErrorMessage: formattedErrorMessage,
+                      ),
+                      actions: _DepositActions(
+                        hasRefund: hasRefund,
+                        onRetryClaim: onRetryClaim,
+                        onRefund: onRefund,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(key: ValueKey<String>('collapsed')),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Header section of deposit card (always visible)
-class _DepositCardHeader extends StatelessWidget {
-  const _DepositCardHeader({
-    required this.deposit,
-    required this.isExpanded,
-    required this.hasError,
+/// Transaction details with blockchain explorer link - shown in expanded view
+class _TransactionDetails extends StatelessWidget {
+  final String txid;
+  final String formattedTxid;
+  final VoidCallback onCopyTxid;
+
+  const _TransactionDetails({
+    required this.txid,
+    required this.formattedTxid,
+    required this.onCopyTxid,
   });
 
-  final DepositInfo deposit;
-  final bool isExpanded;
-  final bool hasError;
+  @override
+  Widget build(BuildContext context) {
+    return ExpandableDetailRow(
+      title: 'Transaction',
+      value: txid,
+      linkUrl: 'https://mempool.space/tx/$txid',
+      copyTooltip: 'Copy transaction ID',
+      linkTooltip: 'View on block explorer',
+    );
+  }
+}
+
+/// Amount row with label-value formatting
+class _AmountRow extends StatelessWidget {
+  final BigInt amountSats;
+  final AutoSizeGroup? labelAutoSizeGroup;
+
+  const _AmountRow({required this.amountSats, this.labelAutoSizeGroup});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: AutoSizeText(
+            'Amount:',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18.0,
+              letterSpacing: 0.0,
+              height: 1.28,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.left,
+            maxLines: 1,
+            group: labelAutoSizeGroup,
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            reverse: true,
+            child: Text(
+              '$amountSats sats',
+              style: const TextStyle(fontSize: 18.0, color: Colors.white),
+              textAlign: TextAlign.right,
+              maxLines: 1,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Output row with label-value formatting
+class _OutputRow extends StatelessWidget {
+  final int vout;
+  final AutoSizeGroup? labelAutoSizeGroup;
+
+  const _OutputRow({required this.vout, this.labelAutoSizeGroup});
 
   @override
   Widget build(BuildContext context) {
@@ -95,72 +203,25 @@ class _DepositCardHeader extends StatelessWidget {
 
     return Row(
       children: <Widget>[
-        _DepositIconContainer(hasError: hasError),
-        const SizedBox(width: 12),
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: AutoSizeText(
+            'Output:',
+            style: theme.textTheme.titleMedium?.copyWith(fontSize: 18.0),
+            textAlign: TextAlign.left,
+            maxLines: 1,
+            group: labelAutoSizeGroup,
+          ),
+        ),
         Expanded(
-          child: _DepositAmountInfo(deposit: deposit, hasError: hasError),
-        ),
-        Icon(
-          isExpanded ? Icons.expand_less : Icons.expand_more,
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-        ),
-      ],
-    );
-  }
-}
-
-/// Icon container with colored background
-class _DepositIconContainer extends StatelessWidget {
-  const _DepositIconContainer({required this.hasError});
-
-  final bool hasError;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: hasError
-            ? theme.colorScheme.error.withValues(alpha: 0.1)
-            : theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(
-        Icons.account_balance_wallet_outlined,
-        color: hasError ? theme.colorScheme.error : theme.colorScheme.primary,
-        size: 20,
-      ),
-    );
-  }
-}
-
-/// Amount and status information
-class _DepositAmountInfo extends StatelessWidget {
-  const _DepositAmountInfo({required this.deposit, required this.hasError});
-
-  final DepositInfo deposit;
-  final bool hasError;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          '${deposit.amountSats.toString()} sats',
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          hasError ? 'Failed to claim' : 'Waiting to claim',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: hasError
-                ? theme.colorScheme.error
-                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          child: Text(
+            '$vout',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 18.0,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.right,
+            maxLines: 1,
           ),
         ),
       ],
@@ -168,130 +229,118 @@ class _DepositAmountInfo extends StatelessWidget {
   }
 }
 
-/// Expanded content section (shown when card is tapped)
-class _DepositCardExpandedContent extends StatelessWidget {
-  const _DepositCardExpandedContent({
-    required this.deposit,
-    required this.hasError,
+/// Action buttons section - horizontal layout
+class _ActionButtons extends StatelessWidget {
+  final bool hasRefund;
+  final VoidCallback onRetryClaim;
+  final VoidCallback onRefund;
+
+  const _ActionButtons({
     required this.hasRefund,
-    required this.formattedTxid,
     required this.onRetryClaim,
-    required this.onShowRefundInfo,
+    required this.onRefund,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Expanded(
+          child: DataActionButton(label: 'CLAIM', onPressed: onRetryClaim, textGroup: _buttonGroup),
+        ),
+        const SizedBox(width: DataActionButtonTheme.spacing),
+        Expanded(
+          child: DataActionButton(label: 'REFUND', onPressed: onRefund, textGroup: _buttonGroup),
+        ),
+      ],
+    );
+  }
+}
+
+/// A container widget that separates deposit content from actions
+class DepositContent extends StatelessWidget {
+  const DepositContent({required this.content, required this.actions, super.key});
+
+  final Widget content;
+  final Widget actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[content, actions],
+    );
+  }
+}
+
+/// The content section containing transaction details, amount, vout, and error
+class _DepositDetailsContent extends StatelessWidget {
+  final String txid;
+  final String formattedTxid;
+  final BigInt amountSats;
+  final int vout;
+  final AutoSizeGroup labelAutoSizeGroup;
+  final VoidCallback onCopyTxid;
+  final bool hasError;
+  final String? formattedErrorMessage;
+
+  const _DepositDetailsContent({
+    required this.txid,
+    required this.formattedTxid,
+    required this.amountSats,
+    required this.vout,
+    required this.labelAutoSizeGroup,
     required this.onCopyTxid,
+    this.hasError = false,
     this.formattedErrorMessage,
   });
 
-  final DepositInfo deposit;
-  final bool hasError;
-  final bool hasRefund;
-  final String formattedTxid;
-  final String? formattedErrorMessage;
-  final VoidCallback onRetryClaim;
-  final VoidCallback onShowRefundInfo;
-  final VoidCallback onCopyTxid;
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        const SizedBox(height: 16),
-        const Divider(height: 1),
-        const SizedBox(height: 16),
-        _DepositDetailRow(label: 'Transaction', value: formattedTxid, onTap: onCopyTxid),
-        const SizedBox(height: 8),
-        _DepositDetailRow(label: 'Output', value: '${deposit.vout}'),
-        if (hasError && deposit.claimError != null && formattedErrorMessage != null) ...<Widget>[
-          const SizedBox(height: 16),
-          WarningBox.text(message: formattedErrorMessage!),
-        ],
-        const SizedBox(height: 16),
-        _RetryClaimButton(onPressed: onRetryClaim),
-        if (hasRefund) ...<Widget>[
-          const SizedBox(height: 8),
-          _ViewRefundButton(onPressed: onShowRefundInfo),
-        ],
-      ],
+      children:
+          <Widget>[
+              _TransactionDetails(txid: txid, formattedTxid: formattedTxid, onCopyTxid: onCopyTxid),
+              _AmountRow(amountSats: amountSats, labelAutoSizeGroup: labelAutoSizeGroup),
+              if (vout > 0) ...<Widget>[
+                _OutputRow(vout: vout, labelAutoSizeGroup: labelAutoSizeGroup),
+              ],
+              if (hasError && formattedErrorMessage != null) ...<Widget>[
+                WarningBox.text(message: formattedErrorMessage!),
+              ],
+            ].expand((Widget widget) sync* {
+              yield widget;
+              yield const Divider(
+                height: 32.0,
+                color: Color.fromRGBO(40, 59, 74, 0.5),
+                indent: 0.0,
+                endIndent: 0.0,
+              );
+            }).toList()
+            ..removeLast(),
     );
   }
 }
 
-/// Detail row showing label and value
-class _DepositDetailRow extends StatelessWidget {
-  const _DepositDetailRow({required this.label, required this.value, this.onTap});
+/// The actions section containing retry and refund buttons
+class _DepositActions extends StatelessWidget {
+  const _DepositActions({
+    required this.hasRefund,
+    required this.onRetryClaim,
+    required this.onRefund,
+  });
 
-  final String label;
-  final String value;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        SizedBox(
-          width: 90,
-          child: Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-        ),
-        Expanded(
-          child: GestureDetector(
-            onTap: onTap,
-            child: Text(
-              value,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontFamily: 'monospace',
-                color: onTap != null ? theme.colorScheme.primary : null,
-                decoration: onTap != null ? TextDecoration.underline : null,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Retry claim button
-class _RetryClaimButton extends StatelessWidget {
-  const _RetryClaimButton({required this.onPressed});
-
-  final VoidCallback onPressed;
+  final bool hasRefund;
+  final VoidCallback onRetryClaim;
+  final VoidCallback onRefund;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: FilledButton.icon(
-        onPressed: onPressed,
-        icon: const Icon(Icons.refresh, size: 18),
-        label: const Text('Retry Claim'),
-      ),
-    );
-  }
-}
-
-/// View refund button
-class _ViewRefundButton extends StatelessWidget {
-  const _ViewRefundButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: const Icon(Icons.info_outline, size: 18),
-        label: const Text('View Refund'),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+      child: _ActionButtons(hasRefund: hasRefund, onRetryClaim: onRetryClaim, onRefund: onRefund),
     );
   }
 }
