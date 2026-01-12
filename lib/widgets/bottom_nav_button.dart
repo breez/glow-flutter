@@ -62,7 +62,7 @@ class BottomNavButton extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: borderRadius ?? BorderRadius.circular(8.0),
                 ),
-                minimumSize: expand ? Size(screenWidth, 48) : null,
+                minimumSize: expand ? Size(screenWidth, 48) : const Size(0, 48),
               ),
               onPressed: (enabled && !loading) ? onPressed : null,
               child: loading
