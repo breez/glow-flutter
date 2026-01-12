@@ -7,7 +7,6 @@ import 'package:glow/features/deposits/providers/pending_deposits_provider.dart'
 import 'package:glow/features/deposits/providers/rejected_deposits_provider.dart';
 import 'package:glow/logging/app_logger.dart';
 import 'package:glow/providers/sdk_provider.dart';
-import 'package:glow/routing/app_routes.dart';
 import 'package:glow/utils/error_parser.dart';
 import 'package:logger/logger.dart';
 
@@ -151,32 +150,6 @@ class DepositApprovalScreen extends ConsumerWidget {
 
       if (context.mounted) {
         Navigator.of(context).pop(); // Close approval screen
-
-        // Show confirmation and option to refund
-        final bool? shouldRefund = await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Deposit Rejected'),
-            content: const Text(
-              'This deposit has been marked as rejected. Would you like to refund it to an on-chain address?',
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('LATER'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('REFUND NOW'),
-              ),
-            ],
-          ),
-        );
-
-        if (shouldRefund == true && context.mounted) {
-          // Navigate to refunds screen
-          Navigator.of(context).pushNamed(AppRoutes.depositRefund, arguments: deposit.deposit);
-        }
       }
     } catch (e, stack) {
       _log.e('Failed to reject deposit: ${deposit.id}', error: e, stackTrace: stack);
