@@ -1,6 +1,6 @@
 # glow
 
-Flutter app showcasing [Breez SDK - Nodeless (Spark Implementation)](https://sdk-doc-spark.breez.technology/).
+Flutter app showcasing [Breez SDK - Spark)](https://sdk-doc-spark.breez.technology/).
 
 ## Setup
 
