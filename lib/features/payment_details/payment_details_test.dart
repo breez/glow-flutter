@@ -223,11 +223,10 @@ void main() {
         paymentType: PaymentType.send,
         method: PaymentMethod.lightning,
         timestamp: BigInt.from(1705321800),
-        details: const PaymentDetails_Lightning(
+        details: PaymentDetails_Lightning(
           description: 'Test payment',
           invoice: 'lnbc100n1...',
-          paymentHash: 'abc123...',
-          preimage: 'def456...',
+          htlcDetails: SparkHtlcDetails(paymentHash: 'abc123...', preimage: 'def456...', expiryTime: BigInt.zero, status: SparkHtlcStatus.preimageShared),
           destinationPubkey: '03xyz...',
         ),
       );

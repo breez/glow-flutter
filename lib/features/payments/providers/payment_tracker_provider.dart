@@ -41,6 +41,8 @@ class PaymentTrackerNotifier extends Notifier<PaymentTrackingState> {
           unclaimedDeposits: (List<DepositInfo> unclaimedDeposits) {},
           claimedDeposits: (List<DepositInfo> claimedDeposits) {},
           optimization: (OptimizationEvent optimizationEvent) {},
+          lightningAddressChanged: (LightningAddressInfo? lightningAddress) {},
+          newDeposits: (List<DepositInfo> newDeposits) {},
         );
       });
     });
@@ -84,7 +86,7 @@ class PaymentTrackerNotifier extends Notifier<PaymentTrackingState> {
   String? _extractPaymentHash(Payment payment) {
     final PaymentDetails? details = payment.details;
     if (details is PaymentDetails_Lightning) {
-      return details.paymentHash;
+      return details.htlcDetails.paymentHash;
     }
     return null;
   }

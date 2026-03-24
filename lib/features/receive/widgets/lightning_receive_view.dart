@@ -48,7 +48,7 @@ class LightningReceiveView extends ConsumerWidget {
 class _LightningAddressContent extends ConsumerWidget {
   final BreezSdk sdk;
   final String address;
-  final String lnurl;
+  final LnurlInfo lnurl;
 
   const _LightningAddressContent({required this.sdk, required this.address, required this.lnurl});
 
@@ -59,9 +59,9 @@ class _LightningAddressContent extends ConsumerWidget {
       child: CardWrapper(
         child: Column(
           children: <Widget>[
-            QRCodeCard(data: lnurl),
+            QRCodeCard(data: lnurl.bech32),
             const SizedBox(height: 24),
-            CopyAndShareActions(copyData: address, shareData: lnurl),
+            CopyAndShareActions(copyData: address, shareData: lnurl.bech32),
             const SizedBox(height: 24),
             LightningAddressCard(
               address: address,

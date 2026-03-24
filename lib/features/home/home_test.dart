@@ -255,11 +255,10 @@ void main() {
         paymentType: PaymentType.receive,
         method: PaymentMethod.lightning,
         timestamp: BigInt.from(DateTime.now().millisecondsSinceEpoch ~/ 1000),
-        details: const PaymentDetails_Lightning(
+        details: PaymentDetails_Lightning(
           description: 'Test payment',
           invoice: 'lnbc...',
-          paymentHash: 'hash...',
-          preimage: 'pre...',
+          htlcDetails: SparkHtlcDetails(paymentHash: 'hash...', preimage: 'pre...', expiryTime: BigInt.zero, status: SparkHtlcStatus.preimageShared),
           destinationPubkey: 'pub...',
         ),
       );

@@ -98,6 +98,7 @@ class ConfigService {
       useDefaultExternalInputParsers: networkDefaults.useDefaultExternalInputParsers,
       privateEnabledDefault: networkDefaults.privateEnabledDefault,
       optimizationConfig: networkDefaults.optimizationConfig,
+      maxConcurrentClaims: networkDefaults.maxConcurrentClaims,
     );
   }
 }

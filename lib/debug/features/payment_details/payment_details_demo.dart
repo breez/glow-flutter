@@ -77,11 +77,10 @@ class PaymentDetailsDemoScreen extends StatelessWidget {
       paymentType: PaymentType.send,
       method: PaymentMethod.lightning,
       timestamp: BigInt.from(DateTime.now().millisecondsSinceEpoch ~/ 1000),
-      details: const PaymentDetails_Lightning(
+      details: PaymentDetails_Lightning(
         description: 'Coffee at Satoshi Cafe',
         invoice: 'lnbc500n1pj9x8z7pp5...',
-        paymentHash: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-        preimage: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
+        htlcDetails: SparkHtlcDetails(paymentHash: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef', preimage: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321', expiryTime: BigInt.zero, status: SparkHtlcStatus.preimageShared),
         destinationPubkey: '03abcd1234...',
       ),
     );
@@ -108,10 +107,10 @@ class PaymentDetailsDemoScreen extends StatelessWidget {
       paymentType: PaymentType.receive,
       method: PaymentMethod.lightning,
       timestamp: BigInt.from(DateTime.now().millisecondsSinceEpoch ~/ 1000),
-      details: const PaymentDetails_Lightning(
+      details: PaymentDetails_Lightning(
         description: 'Invoice for services',
         invoice: 'lnbc1m1pj9x8z7pp5...',
-        paymentHash: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+        htlcDetails: SparkHtlcDetails(paymentHash: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890', expiryTime: BigInt.zero, status: SparkHtlcStatus.waitingForPreimage),
         destinationPubkey: '03xyz9876...',
       ),
     );
@@ -138,10 +137,10 @@ class PaymentDetailsDemoScreen extends StatelessWidget {
       paymentType: PaymentType.send,
       method: PaymentMethod.lightning,
       timestamp: BigInt.from(DateTime.now().millisecondsSinceEpoch ~/ 1000),
-      details: const PaymentDetails_Lightning(
+      details: PaymentDetails_Lightning(
         description: 'Failed payment',
         invoice: 'lnbc250n1pj9x8z7pp5...',
-        paymentHash: '9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba',
+        htlcDetails: SparkHtlcDetails(paymentHash: '9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba', expiryTime: BigInt.zero, status: SparkHtlcStatus.returned),
         destinationPubkey: '03def5678...',
       ),
     );
@@ -179,6 +178,7 @@ class PaymentDetailsDemoScreen extends StatelessWidget {
           isFreezable: true,
         ),
         txHash: 'abc123def456...',
+        txType: TokenTransactionType.transfer,
       ),
     );
 

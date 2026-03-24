@@ -77,8 +77,8 @@ class CsvExportService {
       if (payment.details != null) {
         final PaymentDetails details = payment.details!;
         if (details is PaymentDetails_Lightning) {
-          paymentHash = details.paymentHash;
-          preimage = details.preimage ?? '';
+          paymentHash = details.htlcDetails.paymentHash;
+          preimage = details.htlcDetails.preimage ?? '';
           memo = details.description ?? '';
         } else {
           memo = formatter.getShortDescription(details);

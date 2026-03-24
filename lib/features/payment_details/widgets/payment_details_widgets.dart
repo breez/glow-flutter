@@ -111,9 +111,9 @@ class LightningPaymentDetails extends StatelessWidget {
         if (details.description?.isNotEmpty == true)
           PaymentDetailRow(label: 'Description', value: details.description!),
         PaymentDetailRow(label: 'Invoice', value: details.invoice, copyable: true),
-        PaymentDetailRow(label: 'Payment Hash', value: details.paymentHash, copyable: true),
-        if (details.preimage?.isNotEmpty == true)
-          PaymentDetailRow(label: 'Preimage', value: details.preimage!, copyable: true),
+        PaymentDetailRow(label: 'Payment Hash', value: details.htlcDetails.paymentHash, copyable: true),
+        if (details.htlcDetails.preimage?.isNotEmpty == true)
+          PaymentDetailRow(label: 'Preimage', value: details.htlcDetails.preimage!, copyable: true),
         PaymentDetailRow(label: 'Destination', value: details.destinationPubkey, copyable: true),
       ],
     );

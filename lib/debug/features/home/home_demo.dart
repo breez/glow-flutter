@@ -142,11 +142,10 @@ class HomeDemoScreen extends StatelessWidget {
       timestamp: BigInt.from(
         DateTime.now().subtract(const Duration(hours: 2)).millisecondsSinceEpoch ~/ 1000,
       ),
-      details: const PaymentDetails_Lightning(
+      details: PaymentDetails_Lightning(
         description: 'Coffee payment',
         invoice: 'lnbc500n1...',
-        paymentHash: 'abc123...',
-        preimage: 'def456...',
+        htlcDetails: SparkHtlcDetails(paymentHash: 'abc123...', preimage: 'def456...', expiryTime: BigInt.zero, status: SparkHtlcStatus.preimageShared),
         destinationPubkey: '03xyz...',
       ),
     );
@@ -161,11 +160,10 @@ class HomeDemoScreen extends StatelessWidget {
       timestamp: BigInt.from(
         DateTime.now().subtract(const Duration(days: 1)).millisecondsSinceEpoch ~/ 1000,
       ),
-      details: const PaymentDetails_Lightning(
+      details: PaymentDetails_Lightning(
         description: 'Lunch',
         invoice: 'lnbc250n1...',
-        paymentHash: 'xyz789...',
-        preimage: 'uvw012...',
+        htlcDetails: SparkHtlcDetails(paymentHash: 'xyz789...', preimage: 'uvw012...', expiryTime: BigInt.zero, status: SparkHtlcStatus.preimageShared),
         destinationPubkey: '03abc...',
       ),
     );
@@ -180,10 +178,10 @@ class HomeDemoScreen extends StatelessWidget {
       timestamp: BigInt.from(
         DateTime.now().subtract(const Duration(minutes: 10)).millisecondsSinceEpoch ~/ 1000,
       ),
-      details: const PaymentDetails_Lightning(
+      details: PaymentDetails_Lightning(
         description: 'Incoming payment',
         invoice: 'lnbc1m1...',
-        paymentHash: 'pending123...',
+        htlcDetails: SparkHtlcDetails(paymentHash: 'pending123...', expiryTime: BigInt.zero, status: SparkHtlcStatus.waitingForPreimage),
         destinationPubkey: '03pending...',
       ),
     );
