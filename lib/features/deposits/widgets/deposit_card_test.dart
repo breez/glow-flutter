@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:glow/features/deposits/providers/deposit_claimer.dart';
 import 'package:glow/features/deposits/widgets/deposit_card.dart';
 import 'package:glow/features/deposits/models/unclaimed_deposits_state.dart';
-import 'package:glow/features/deposits/widgets/deposit_error_banner.dart';
+import 'package:glow/widgets/warning_box.dart';
 
 void main() {
   group('DepositCard', () {
@@ -22,6 +22,7 @@ void main() {
         txid: txid ?? 'test_txid_${DateTime.now().millisecondsSinceEpoch}',
         vout: vout ?? 0,
         amountSats: amountSats,
+        isMature: true,
         claimError: claimError,
         refundTx: refundTx,
         refundTxId: refundTxId,
@@ -217,7 +218,7 @@ void main() {
         // Expand to see error
         await tester.tap(find.byType(InkWell));
         await tester.pumpAndSettle();
-        expect(find.byType(DepositErrorBanner), findsOneWidget);
+        expect(find.byType(WarningBox), findsOneWidget);
       });
 
       testWidgets('shows error border color when error exists', (WidgetTester tester) async {
@@ -240,7 +241,7 @@ void main() {
         await tester.tap(find.byType(InkWell));
         await tester.pumpAndSettle();
 
-        expect(find.byType(DepositErrorBanner), findsNothing);
+        expect(find.byType(WarningBox), findsNothing);
       });
     });
 
