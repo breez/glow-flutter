@@ -42,6 +42,7 @@ class PaymentTrackerNotifier extends Notifier<PaymentTrackingState> {
           claimedDeposits: (List<DepositInfo> claimedDeposits) {},
           optimization: (OptimizationEvent optimizationEvent) {},
           lightningAddressChanged: (LightningAddressInfo? lightningAddress) {},
+          newDeposits: (List<DepositInfo> newDeposits) {},
         );
       });
     });

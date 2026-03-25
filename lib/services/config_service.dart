@@ -99,7 +99,6 @@ class ConfigService {
       privateEnabledDefault: networkDefaults.privateEnabledDefault,
       optimizationConfig: networkDefaults.optimizationConfig,
       maxConcurrentClaims: networkDefaults.maxConcurrentClaims,
-      supportLnurlVerify: networkDefaults.supportLnurlVerify,
     );
   }
 }
