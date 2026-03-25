@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
-import 'package:crypto/crypto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:glow/config/environment.dart';
@@ -16,7 +14,6 @@ class WalletStorageService with LoggerMixin {
   static const String _walletListKey = 'wallet_list';
   static const String _activeWalletKey = 'active_wallet_id';
   static const String _mnemonicPrefix = 'wallet_mnemonic_';
-  static const String _seedPrefix = 'wallet_seed_';
 
   /// Secure Storage Options
   static const String _accountName = 'Glow';
@@ -103,21 +100,6 @@ class WalletStorageService with LoggerMixin {
     }
   }
 
-  /// Add a new passkey wallet to storage
-  ///
-  /// SECURITY: Stores the raw seed entropy encrypted separately
-  Future<void> addPasskeyWallet(WalletMetadata wallet, Uint8List seed) async {
-    try {
-      await _saveSeed(wallet.id, seed);
-      final List<WalletMetadata> wallets = await loadWallets();
-      await saveWallets(<WalletMetadata>[...wallets, wallet]);
-      log.i('Added passkey wallet: ${wallet.id} (${wallet.displayName})');
-    } catch (e, stack) {
-      log.e('Failed to add passkey wallet: ${wallet.id}', error: e, stackTrace: stack);
-      rethrow;
-    }
-  }
-
   /// Update an existing wallet's metadata
   ///
   /// Does NOT update mnemonic (mnemonics are immutable)
@@ -141,7 +123,6 @@ class WalletStorageService with LoggerMixin {
   Future<void> deleteWallet(String walletId) async {
     try {
       await _deleteMnemonic(walletId);
-      await _deleteSeed(walletId);
       final List<WalletMetadata> wallets = await loadWallets();
       await saveWallets(wallets.where((WalletMetadata w) => w.id != walletId).toList());
 
@@ -270,64 +251,9 @@ class WalletStorageService with LoggerMixin {
   }
 
   // ============================================================================
-  // Seed Management (for passkey wallets)
-  // ============================================================================
-
-  /// Load raw seed entropy for a passkey wallet
-  Future<Uint8List?> loadSeed(String walletId) async {
-    try {
-      final String? encoded = await _storage.read(key: '$_seedPrefix$walletId');
-      if (encoded != null) {
-        log.d('Loaded seed for wallet: $walletId');
-        return base64Decode(encoded);
-      } else {
-        log.w('Seed not found for wallet: $walletId');
-        return null;
-      }
-    } catch (e) {
-      log.e('Failed to load seed for wallet: $walletId (details hidden for security)');
-      return null;
-    }
-  }
-
-  /// Save raw seed entropy for a passkey wallet
-  Future<void> _saveSeed(String walletId, Uint8List seed) async {
-    try {
-      await _storage.write(key: '$_seedPrefix$walletId', value: base64Encode(seed));
-      log.d('Saved seed for wallet: $walletId (content not logged)');
-    } catch (e) {
-      log.e('Failed to save seed for wallet: $walletId (details hidden for security)');
-      rethrow;
-    }
-  }
-
-  /// Delete seed for a specific wallet
-  Future<void> _deleteSeed(String walletId) async {
-    try {
-      await _storage.delete(key: '$_seedPrefix$walletId');
-    } catch (e) {
-      log.e('Failed to delete seed for wallet: $walletId (details hidden for security)');
-      // Don't rethrow — best-effort cleanup
-    }
-  }
-
-  // ============================================================================
   // Utilities
   // ============================================================================
 
-  /// Generate a unique wallet ID from mnemonic
-  ///
-  /// Uses first 8 characters of SHA-256 hash of the mnemonic
-  /// This provides a deterministic ID that's unique per mnemonic
-  ///
-  /// SECURITY: The ID doesn't reveal the mnemonic, but allows
-  /// verification that two mnemonics are the same
-  static String generateWalletId(String mnemonic) =>
-      sha256.convert(utf8.encode(mnemonic)).toString().substring(0, 8);
-
-  /// Generate a unique wallet ID from raw seed bytes
-  static String generateWalletIdFromBytes(Uint8List seed) =>
-      sha256.convert(seed).toString().substring(0, 8);
 }
 
 final Provider<WalletStorageService> walletStorageServiceProvider = Provider<WalletStorageService>((

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:collection/collection.dart';
@@ -85,12 +84,17 @@ final FutureProvider<BreezSdk> sdkProvider = FutureProvider<BreezSdk>((Ref ref) 
       }
       seed = Seed.mnemonic(mnemonic: mnemonic);
     case WalletAuthMethod.passkey:
-      final Uint8List? seedBytes = await storage.loadSeed(walletId);
-      if (seedBytes == null) {
-        log.e('Wallet seed not found');
-        throw Exception('Wallet seed not found');
-      }
-      seed = Seed.entropy(seedBytes);
+      // Re-derive seed from passkey on each connect — no secrets stored
+      log.i('Re-deriving seed from passkey');
+      final PasskeyPrfProvider prfProvider = PasskeyPrfProvider(
+        const PasskeyPrfProviderOptions(rpName: 'Glow', userName: 'Glow', userDisplayName: 'Glow'),
+      );
+      final Passkey passkey = Passkey(
+        derivePrfSeed: prfProvider.derivePrfSeed,
+        isPrfAvailable: prfProvider.isPrfAvailable,
+      );
+      final Wallet wallet = await passkey.getWallet(label: 'Default');
+      seed = wallet.seed;
   }
 
   // Create config with app settings and user preferences
