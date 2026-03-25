@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:glow/features/send_payment/models/bolt12_invoice_request_state.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/widgets/bottom_nav_button.dart';
 import 'package:glow/widgets/card_wrapper.dart';
 import 'package:glow/widgets/error_card.dart';
@@ -27,7 +28,7 @@ class Bolt12InvoiceRequestLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('BOLT12 Invoice Request'), centerTitle: true),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('BOLT12 Invoice Request'), centerTitle: true),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/logging/logger_mixin.dart';
 import 'package:glow/features/wallet/models/wallet_metadata.dart';
 import 'package:glow/features/wallet/providers/wallet_provider.dart';
@@ -64,7 +65,7 @@ class _WalletCreateScreenState extends ConsumerState<WalletCreateScreen> with Lo
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Wallet')),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Create Wallet')),
       body: SafeArea(
         child: Form(
           key: _formKey,

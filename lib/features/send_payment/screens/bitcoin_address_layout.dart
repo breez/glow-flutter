@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart' hide PaymentStatus;
 import 'package:flutter/material.dart';
 import 'package:glow/features/send_payment/models/bitcoin_address_state.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/send_payment/widgets/amount_input_form.dart';
 import 'package:glow/features/send_payment/widgets/payment_bottom_nav.dart';
 import 'package:glow/features/send_payment/widgets/payment_status_view.dart';
@@ -75,6 +76,7 @@ class _BitcoinAddressLayoutState extends State<BitcoinAddressLayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const GlowBackButton(),
         title: Text(_getTitle()),
         centerTitle: false, // Left-aligned
       ),

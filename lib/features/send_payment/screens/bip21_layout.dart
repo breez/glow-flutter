@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:glow/features/send_payment/models/bip21_state.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/widgets/bottom_nav_button.dart';
 import 'package:glow/widgets/card_wrapper.dart';
 
@@ -25,7 +26,7 @@ class Bip21Layout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Choose Payment Method'), centerTitle: true),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Choose Payment Method'), centerTitle: true),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

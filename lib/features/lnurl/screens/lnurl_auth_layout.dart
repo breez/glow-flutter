@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:glow/features/lnurl/models/lnurl_auth_state.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/send_payment/widgets/payment_bottom_nav.dart';
 import 'package:glow/widgets/card_wrapper.dart';
 import 'package:glow/widgets/error_card.dart';
@@ -28,7 +29,7 @@ class LnurlAuthLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Authenticate'), centerTitle: true),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Authenticate'), centerTitle: true),
       body: SafeArea(
         child: _BodyContent(authDetails: authDetails, state: state),
       ),

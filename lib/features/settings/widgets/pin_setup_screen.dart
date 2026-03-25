@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/settings/models/pin_setup_state.dart';
 import 'package:glow/features/settings/providers/pin_provider.dart';
 import 'package:glow/features/settings/providers/pin_setup_notifier.dart';
@@ -51,7 +52,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(leading: const BackButton()),
+      appBar: AppBar(leading: const GlowBackButton()),
       body: SafeArea(
         child: PinSetupLayout(
           state: state,

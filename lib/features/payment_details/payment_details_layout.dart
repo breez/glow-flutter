@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:glow/features/payment_details/models/payment_details_state.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/payment_details/widgets/payment_details_widgets.dart';
 
 /// Pure presentation widget for payment details
@@ -14,7 +15,7 @@ class PaymentDetailsLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment Details')),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Payment Details')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),

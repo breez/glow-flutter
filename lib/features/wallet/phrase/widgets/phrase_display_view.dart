@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:glow/features/wallet/widgets/backup_phrase_grid.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/widgets/bottom_nav_button.dart';
 
 /// View for displaying the backup phrase
@@ -47,7 +48,7 @@ class PhraseDisplayView extends StatelessWidget {
         title: Text(title),
         leading: showCloseButton
             ? IconButton(icon: const Icon(Icons.close), onPressed: onButtonPressed)
-            : null,
+            : const GlowBackButton(),
       ),
       body: SafeArea(
         child: Padding(

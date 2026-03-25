@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glow/widgets/back_button.dart';
 
 /// View for verifying that the user has correctly written down the phrase
 class PhraseVerificationView extends StatelessWidget {
@@ -18,7 +19,7 @@ class PhraseVerificationView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Let's verify")),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text("Let's verify")),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

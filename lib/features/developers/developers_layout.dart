@@ -2,6 +2,7 @@ import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:glow/features/developers/widgets/developers_menu_button.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/developers/widgets/logs_card.dart';
 
 class DevelopersLayout extends StatelessWidget {
@@ -26,6 +27,7 @@ class DevelopersLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const GlowBackButton(),
         title: const Text('Debug'),
         actions: <Widget>[
           DevelopersMenuButton(

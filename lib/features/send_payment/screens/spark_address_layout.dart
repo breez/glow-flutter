@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart' hide PaymentStatus;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/developers/providers/network_provider.dart';
 import 'package:glow/features/send_payment/models/spark_address_state.dart';
 import 'package:glow/features/send_payment/widgets/network_mismatch_error.dart';
@@ -81,7 +82,7 @@ class _SparkAddressLayoutState extends ConsumerState<SparkAddressLayout> {
             widget.addressDetails.network == BitcoinNetwork.bitcoin);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Send Payment'), centerTitle: false),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Send Payment'), centerTitle: false),
       body: SafeArea(
         child: _BodyContent(
           addressDetails: widget.addressDetails,

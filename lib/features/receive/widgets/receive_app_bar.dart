@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:glow/features/receive/models/receive_method.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/receive/models/receive_state.dart';
 
 class ReceiveAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -26,8 +27,8 @@ class ReceiveAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       leading: showAppBarControls
-          ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: goBackInFlow)
-          : null,
+          ? GlowBackButton(onPressed: goBackInFlow)
+          : const GlowBackButton(),
       centerTitle: showAppBarControls,
       title: showAppBarControls
           ? ReceiveMethodDropdown(selectedMethod: state.method, onChanged: onChangeMethod)

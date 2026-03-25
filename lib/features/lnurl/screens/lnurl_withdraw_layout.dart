@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:glow/features/lnurl/models/lnurl_withdraw_state.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/send_payment/widgets/amount_input_form.dart';
 import 'package:glow/features/send_payment/widgets/payment_bottom_nav.dart';
 import 'package:glow/widgets/card_wrapper.dart';
@@ -51,7 +52,7 @@ class _LnurlWithdrawLayoutState extends State<LnurlWithdrawLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Withdraw Funds'), centerTitle: true),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Withdraw Funds'), centerTitle: true),
       body: SafeArea(
         child: _BodyContent(
           withdrawDetails: widget.withdrawDetails,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:glow/features/wallet/widgets/restore_phrase_grid.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/widgets/warning_box.dart';
 import 'package:glow/widgets/bottom_nav_button.dart';
 
@@ -30,7 +31,7 @@ class RestoreLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Enter your backup phrase')),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Enter your backup phrase')),
       body: SafeArea(
         child: Form(
           key: formKey,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/widgets/bottom_nav_button.dart';
 
 /// View for displaying information about the backup phrase importance
@@ -17,7 +18,7 @@ class _PhraseInfoViewState extends State<PhraseInfoView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Backup Phrase')),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Backup Phrase')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

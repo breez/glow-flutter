@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:glow/features/send/widgets/paste_and_scan_actions.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/send/widgets/send_approve_button.dart';
 import 'package:glow/features/send/widgets/send_form.dart';
 import 'package:glow/widgets/card_wrapper.dart';
@@ -34,7 +35,7 @@ class SendLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: const BackButton(), title: const Text('Payee Information')),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Payee Information')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),

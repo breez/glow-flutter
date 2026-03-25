@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/routing/app_routes.dart';
 import 'package:glow/logging/logger_mixin.dart';
 import 'package:glow/features/wallet/models/wallet_metadata.dart';
@@ -173,6 +174,7 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
 
     return Scaffold(
       appBar: AppBar(
+        leading: const GlowBackButton(),
         title: const Text('My Wallets'),
         actions: <Widget>[
           IconButton(icon: const Icon(Icons.add), onPressed: () => _showAddWalletSheet()),
