@@ -270,14 +270,10 @@ final Provider<void> sdkEventListenerProvider = Provider<void>((Ref ref) {
           // TODO(erdemyerebasmaz): handle optimization events
         },
         lightningAddressChanged: (LightningAddressInfo? lightningAddress) {
-<<<<<<< HEAD
           log.i('Lightning address changed: ${lightningAddress?.lightningAddress}');
-=======
-          log.i('Lightning address changed');
         },
         newDeposits: (List<DepositInfo> newDeposits) {
           log.i('New deposits: ${newDeposits.length}');
->>>>>>> 8b78b5e (Add passkey wallet creation and entropy-based SDK connection)
         },
       );
     });
