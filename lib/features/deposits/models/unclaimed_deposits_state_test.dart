@@ -207,9 +207,7 @@ void main() {
       });
 
       testWidgets('empty state shows correct message', (WidgetTester tester) async {
-        final List<DepositInfo> deposits = <DepositInfo>[
-          _createMockDeposit(txid: 'txid1', amountSats: BigInt.from(10000)),
-        ];
+        final List<DepositInfo> deposits = <DepositInfo>[];
         await tester.pumpWidget(
           makeTestable(
             UnclaimedDepositsLayout(
@@ -704,7 +702,6 @@ DepositInfo _createMockDeposit({
     txid: txid,
     vout: vout ?? 0,
     amountSats: amountSats,
-    isMature: true,
     claimError: claimError,
     refundTx: refundTx,
     refundTxId: refundTxId,

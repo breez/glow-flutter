@@ -247,6 +247,9 @@ final Provider<void> sdkEventListenerProvider = Provider<void>((Ref ref) {
           log.i('Optimization event: ${optimizationEvent.runtimeType}');
           // TODO(erdemyerebasmaz): handle optimization events
         },
+        lightningAddressChanged: (LightningAddressInfo? lightningAddress) {
+          log.i('Lightning address changed: ${lightningAddress?.lightningAddress}');
+        },
       );
     });
   });

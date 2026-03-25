@@ -111,7 +111,6 @@ DepositInfo _createMockDeposit({
     txid: txid ?? 'test_txid',
     vout: vout ?? 0,
     amountSats: amountSats ?? BigInt.from(10000),
-    isMature: true,
     claimError: claimError,
     refundTx: refundTx,
     refundTxId: refundTxId,
