@@ -2,27 +2,49 @@ import 'package:glow/features/profile/models/profile.dart';
 import 'package:glow/features/profile/models/profile_animal.dart';
 import 'package:glow/features/profile/models/profile_color.dart';
 
+/// How this wallet's seed was created.
+enum WalletAuthMethod {
+  /// Traditional BIP39 mnemonic phrase.
+  mnemonic,
+
+  /// Platform passkey with PRF extension.
+  passkey,
+}
+
 /// Non-sensitive metadata for a wallet stored in secure storage.
 ///
 /// SECURITY CRITICAL:
-/// - Mnemonic is NEVER stored in this model
-/// - Wallet ID is derived from mnemonic hash (first 8 chars of SHA-256)
-/// - Mnemonic itself is stored separately in secure storage with key: 'wallet_mnemonic_{id}'
+/// - Mnemonic/seed is NEVER stored in this model
+/// - Wallet ID is derived from seed hash (first 8 chars of SHA-256)
+/// - Secrets are stored separately in secure storage:
+///   - Mnemonic wallets: key 'wallet_mnemonic_{id}'
+///   - Passkey wallets: key 'wallet_seed_{id}'
 class WalletMetadata {
   final String id;
   final Profile profile;
   final bool isVerified;
+  final WalletAuthMethod authMethod;
 
-  const WalletMetadata({required this.id, required this.profile, this.isVerified = false});
+  const WalletMetadata({
+    required this.id,
+    required this.profile,
+    this.isVerified = false,
+    this.authMethod = WalletAuthMethod.mnemonic,
+  });
 
   /// Display name from profile (customName or "Color Animal")
   String get displayName => profile.displayName;
 
-  WalletMetadata copyWith({String? id, Profile? profile, bool? isVerified}) => WalletMetadata(
-    id: id ?? this.id,
-    profile: profile ?? this.profile,
-    isVerified: isVerified ?? this.isVerified,
-  );
+  /// Whether this wallet uses passkey authentication.
+  bool get isPasskey => authMethod == WalletAuthMethod.passkey;
+
+  WalletMetadata copyWith({String? id, Profile? profile, bool? isVerified, WalletAuthMethod? authMethod}) =>
+      WalletMetadata(
+        id: id ?? this.id,
+        profile: profile ?? this.profile,
+        isVerified: isVerified ?? this.isVerified,
+        authMethod: authMethod ?? this.authMethod,
+      );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
@@ -31,6 +53,7 @@ class WalletMetadata {
     'customName': profile.customName,
     'customImagePath': profile.customImagePath,
     'isVerified': isVerified,
+    'authMethod': authMethod.name,
   };
 
   factory WalletMetadata.fromJson(Map<String, dynamic> json) {
@@ -60,7 +83,12 @@ class WalletMetadata {
       );
     }
 
-    return WalletMetadata(id: id, profile: profile, isVerified: isVerified);
+    // Migration: missing authMethod → mnemonic (existing wallets)
+    final WalletAuthMethod authMethod = json.containsKey('authMethod')
+        ? WalletAuthMethod.values.byName(json['authMethod'] as String)
+        : WalletAuthMethod.mnemonic;
+
+    return WalletMetadata(id: id, profile: profile, isVerified: isVerified, authMethod: authMethod);
   }
 
   @override
@@ -72,7 +100,8 @@ class WalletMetadata {
           other.profile.color == profile.color &&
           other.profile.customName == profile.customName &&
           other.profile.customImagePath == profile.customImagePath &&
-          other.isVerified == isVerified;
+          other.isVerified == isVerified &&
+          other.authMethod == authMethod;
 
   @override
   int get hashCode => Object.hash(
@@ -82,9 +111,10 @@ class WalletMetadata {
     profile.customName,
     profile.customImagePath,
     isVerified,
+    authMethod,
   );
 
   @override
   String toString() =>
-      'WalletMetadata(id: $id, profile: ${profile.displayName}, isVerified: $isVerified)';
+      'WalletMetadata(id: $id, profile: ${profile.displayName}, authMethod: ${authMethod.name}, isVerified: $isVerified)';
 }
