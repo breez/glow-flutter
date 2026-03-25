@@ -22,33 +22,37 @@ class LnurlAuthNotifier extends Notifier<LnurlAuthState> {
 
   @override
   LnurlAuthState build() {
-    // Start in initial state, ready to authenticate
     return const LnurlAuthInitial();
   }
 
-  /// Authenticate with the service
+  /// Authenticate with the service via LNURL-Auth (LUD-04)
   Future<void> authenticate() async {
     state = const LnurlAuthProcessing();
 
     try {
-      await ref.read(sdkProvider.future);
+      final BreezSdk sdk = await ref.read(sdkProvider.future);
 
       _log.i('Authenticating with ${arg.domain}');
 
-      // TODO(erdemyerebasmaz): LNURL Auth implementation
-      // The Breez SDK Spark may need to expose a specific method for LNURL Auth
-      // For now, simulate a delay
-      await Future<void>.delayed(const Duration(seconds: 1));
+      final LnurlCallbackStatus result = await sdk.lnurlAuth(requestData: arg);
 
-      // LNURL Auth not yet implemented in SDK
-      _log.w('LNURL Auth not yet fully implemented');
-      state = const LnurlAuthError(
-        message: 'LNURL Auth is not yet supported',
-        technicalDetails: 'SDK method not available',
-      );
+      switch (result) {
+        case LnurlCallbackStatus_Ok():
+          _log.i('Authentication successful for ${arg.domain}');
+          state = const LnurlAuthSuccess();
+        case LnurlCallbackStatus_ErrorStatus(:final LnurlErrorDetails errorDetails):
+          _log.e('Authentication failed: ${errorDetails.reason}');
+          state = LnurlAuthError(
+            message: 'Authentication failed',
+            technicalDetails: errorDetails.reason,
+          );
+      }
     } catch (e) {
       _log.e('Failed to authenticate: $e');
-      state = LnurlAuthError(message: _extractErrorMessage(e), technicalDetails: e.toString());
+      state = LnurlAuthError(
+        message: _extractErrorMessage(e),
+        technicalDetails: e.toString(),
+      );
     }
   }
 
