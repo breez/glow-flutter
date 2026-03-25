@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/logging/app_logger.dart';
@@ -37,7 +35,7 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
       log.i('Creating new wallet: ${walletProfile.displayName} on ${network.name}');
 
       final String mnemonic = _mnemonicService!.generateMnemonic();
-      final String walletId = WalletStorageService.generateWalletId(mnemonic);
+      final String walletId = Seed.mnemonic(mnemonic: mnemonic).computeId();
       final WalletMetadata wallet = WalletMetadata(id: walletId, profile: walletProfile);
 
       await _storage!.addWallet(wallet, mnemonic);
@@ -72,20 +70,9 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
       );
 
       final Wallet wallet = await passkey.getWallet(label: 'Default');
+      final String walletId = wallet.computeId();
 
-      // Extract entropy bytes from the seed
-      final Seed seed = wallet.seed;
-      final Uint8List seedBytes;
-      switch (seed) {
-        case Seed_Entropy(:final Uint8List field0):
-          seedBytes = field0;
-        case Seed_Mnemonic():
-          throw Exception('Passkey wallet returned mnemonic seed unexpectedly');
-      }
-
-      final String walletId = WalletStorageService.generateWalletIdFromBytes(seedBytes);
-
-      // Check for duplicate
+      // Check for duplicate (same passkey + label = same wallet)
       final List<WalletMetadata> existingWallets = state.value ?? <WalletMetadata>[];
       if (existingWallets.any((WalletMetadata w) => w.id == walletId)) {
         log.i('Passkey wallet already exists: $walletId');
@@ -99,7 +86,9 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
         authMethod: WalletAuthMethod.passkey,
       );
 
-      await _storage!.addPasskeyWallet(metadata, seedBytes);
+      // No mnemonic/seed stored — passkey wallets re-derive on each connect
+      final List<WalletMetadata> wallets = await _storage!.loadWallets();
+      await _storage!.saveWallets(<WalletMetadata>[...wallets, metadata]);
       state = AsyncValue<List<WalletMetadata>>.data(<WalletMetadata>[...existingWallets, metadata]);
 
       log.i('Created passkey wallet: $walletId (${walletProfile.displayName})');
@@ -124,7 +113,7 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
         throw Exception('Invalid mnemonic: $error');
       }
 
-      final String walletId = WalletStorageService.generateWalletId(normalized);
+      final String walletId = Seed.mnemonic(mnemonic: normalized).computeId();
       final List<WalletMetadata> existingWallets = state.value ?? <WalletMetadata>[];
 
       if (existingWallets.any((WalletMetadata w) => w.id == walletId)) {
