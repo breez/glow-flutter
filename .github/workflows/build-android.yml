@@ -196,10 +196,15 @@ jobs:
           sudo chmod 600 ~/.ssh/id_rsa
           ssh-add ~/.ssh/id_rsa
 
+      - name: 🔨 Generate Spark SDK bindings
+        if: ${{ needs.setup.outputs.use-published-plugins == 'false' }}
+        working-directory: spark-sdk/packages/flutter
+        run: just gen
+
       - name: 🔨 Build Spark SDK Android bindings
         if: ${{ needs.setup.outputs.use-published-plugins == 'false' }}
         working-directory: spark-sdk/packages/flutter
-        run: just build
+        run: just build-release
 
       - name: 🗂️ Populate Flutter tool's cache of binary artifacts.
         working-directory: glow
