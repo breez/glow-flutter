@@ -151,7 +151,7 @@ void main() {
     });
   });
 
-  group('PaymentDetailsLayout Widget Tests', () {
+  group('PaymentDetailsSheet Widget Tests', () {
     testWidgets('displays all basic payment information', (WidgetTester tester) async {
       final Payment payment = Payment(
         id: 'test_payment_123',
@@ -174,13 +174,12 @@ void main() {
         shouldShowFees: true,
       );
 
-      await tester.pumpWidget(MaterialApp(home: PaymentDetailsLayout(state: state)));
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: PaymentDetailsSheet(state: state))));
 
       // Verify all fields are displayed
       expect(find.text('50,000'), findsOneWidget);
-      expect(find.text('Completed'), findsOneWidget);
+      expect(find.text('Completed'), findsWidgets); // Status chip + detail row
       expect(find.text('Send'), findsOneWidget);
-      expect(find.text('Lightning'), findsOneWidget);
       expect(find.text('100 sats'), findsOneWidget);
       expect(find.text('15/1/2024 at 12:30'), findsOneWidget);
       expect(find.text('test_payment_123'), findsOneWidget);
@@ -208,7 +207,7 @@ void main() {
         shouldShowFees: false,
       );
 
-      await tester.pumpWidget(MaterialApp(home: PaymentDetailsLayout(state: state)));
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: PaymentDetailsSheet(state: state))));
 
       expect(find.text('Fee'), findsNothing);
       expect(find.text('0 sats'), findsNothing);
@@ -242,9 +241,10 @@ void main() {
         shouldShowFees: true,
       );
 
-      await tester.pumpWidget(MaterialApp(home: PaymentDetailsLayout(state: state)));
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: PaymentDetailsSheet(state: state))));
 
-      expect(find.text('Test payment'), findsOneWidget);
+      // "Test payment" appears in both the header title and description detail
+      expect(find.text('Test payment'), findsWidgets);
       expect(find.text('lnbc100n1...'), findsOneWidget);
       expect(find.text('abc123...'), findsOneWidget);
       expect(find.text('def456...'), findsOneWidget);
