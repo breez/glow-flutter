@@ -44,6 +44,17 @@ class HomeDrawer extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
                         child: _DrawerItem(
+                          title: 'Fiat Currency',
+                          icon: Icons.currency_exchange,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, AppRoutes.fiatCurrencies);
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: _DrawerItem(
                           title: 'Security & Backup',
                           icon: Icons.lock_outline,
                           onTap: () {

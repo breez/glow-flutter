@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/features/deposits/unclaimed_deposits_screen.dart';
 import 'package:glow/features/developers/developers_screen.dart';
+import 'package:glow/features/fiat_currencies/fiat_currency_screen.dart';
 import 'package:glow/features/lnurl/screens/lnurl_auth_screen.dart';
 import 'package:glow/features/lnurl/screens/lnurl_pay_screen.dart';
 import 'package:glow/features/lnurl/screens/lnurl_withdraw_screen.dart';
@@ -74,6 +75,9 @@ class AppRoutes {
   // Settings routes
   static const String appSettings = '/settings';
   static const String pinSetup = '/settings/pin_setup';
+
+  // Fiat currency routes
+  static const String fiatCurrencies = '/fiat_currencies';
 
   // Developers routes
   static const String developersScreen = '/developers';
@@ -265,6 +269,13 @@ class AppRoutes {
       case pinSetup:
         return MaterialPageRoute<PinSetupScreen>(
           builder: (_) => const PinSetupScreen(),
+          settings: settings,
+        );
+
+      // Fiat currency routes
+      case fiatCurrencies:
+        return MaterialPageRoute<FiatCurrencyScreen>(
+          builder: (_) => const FiatCurrencyScreen(),
           settings: settings,
         );
 

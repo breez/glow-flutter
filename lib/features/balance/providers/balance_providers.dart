@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/core/services/transaction_formatter.dart';
 import 'package:glow/features/balance/models/balance_state.dart';
+import 'package:glow/features/fiat_currencies/models/fiat_state.dart';
+import 'package:glow/features/fiat_currencies/providers/fiat_currency_provider.dart';
 import 'package:glow/providers/sdk_provider.dart';
 
 /// Provider for BalanceState
@@ -12,8 +14,8 @@ final Provider<BalanceState> balanceStateProvider = Provider<BalanceState>((Ref 
   final AsyncValue<bool> shouldWaitAsync = ref.watch(shouldWaitForInitialSyncProvider);
   final bool hasSynced = ref.watch(hasSyncedProvider);
 
-  // TODO(erdemyerebasmaz): Add fiat rate support when available
-  // final fiatRate = ref.watch(fiatRateProvider);
+  // Watch fiat currency state for conversion
+  final AsyncValue<FiatCurrencyState> fiatAsync = ref.watch(fiatCurrencyProvider);
 
   return balanceAsync.when(
     data: (BigInt balance) {
@@ -22,9 +24,12 @@ final Provider<BalanceState> balanceStateProvider = Provider<BalanceState>((Ref 
       final bool shouldWait = shouldWaitAsync.hasValue ? shouldWaitAsync.value! : false;
 
       final String formattedBalance = formatter.formatSats(balance);
-      // TODO(erdemyerebasmaz): Add when fiat rate available
-      final String? formattedFiat = null;
-      // formattedFiat = formatter.formatFiat(balance, fiatRate.rate, fiatRate.symbol);
+
+      // Format fiat using the fiat currency provider
+      String? formattedFiat;
+      if (fiatAsync.hasValue) {
+        formattedFiat = ref.read(fiatCurrencyProvider.notifier).formatSatsAsFiat(balance);
+      }
 
       return BalanceState.loaded(
         balance: balance,
