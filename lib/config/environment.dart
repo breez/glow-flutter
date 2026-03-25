@@ -12,7 +12,7 @@ enum Environment {
 
   /// Get environment suffix for storage keys
   String get storageSuffix => switch (this) {
-    Environment.dev => '_dev',
+    Environment.dev => '_dev2',
     Environment.prod => '',
   };
 }
