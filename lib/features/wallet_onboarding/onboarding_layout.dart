@@ -6,12 +6,16 @@ import 'package:glow/features/wallet_onboarding/widgets/onboarding_actions.dart'
 
 class OnboardingLayout extends StatelessWidget {
   final OnboardingState state;
+  final bool isPrfAvailable;
   final VoidCallback onRegister;
+  final VoidCallback onPasskey;
   final VoidCallback onRestore;
 
   const OnboardingLayout({
     required this.state,
+    required this.isPrfAvailable,
     required this.onRegister,
+    required this.onPasskey,
     required this.onRestore,
     super.key,
   });
@@ -26,7 +30,7 @@ class OnboardingLayout extends StatelessWidget {
               const Spacer(flex: 3),
               const AnimatedLogo(),
               const Spacer(flex: 3),
-              OnboardingActions(state: state, onRegister: onRegister, onRestore: onRestore),
+              OnboardingActions(state: state, isPrfAvailable: isPrfAvailable, onRegister: onRegister, onPasskey: onPasskey, onRestore: onRestore),
               const Spacer(),
               const BreezSdkFooter(),
             ],
