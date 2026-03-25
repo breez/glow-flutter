@@ -12,7 +12,9 @@ dependencies:
     sdk: flutter
   flutter_test:
     sdk: flutter
-  
+  integration_test:
+    sdk: flutter
+
   # Breez SDK
   breez_sdk_spark_flutter:
     git:
@@ -72,8 +74,6 @@ dev_dependencies:
   
   # Testing
   build_runner: ^2.10.4
-  integration_test:
-    sdk: flutter
   mockito: ^5.6.1
   path_provider_platform_interface: ^2.1.2
 
