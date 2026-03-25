@@ -28,7 +28,7 @@ class PinSetupLayout extends StatelessWidget {
         Expanded(
           flex: 80,
           child: PinEntryWidget(
-            key: ValueKey(state.runtimeType),
+            key: const ValueKey<String>('pinEntry'),
             onPinComplete: onPinEntered,
             onInputStarted: onInputStarted,
             label: label ?? _getDefaultLabel(),
