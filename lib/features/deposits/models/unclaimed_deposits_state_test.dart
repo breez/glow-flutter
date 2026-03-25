@@ -702,6 +702,7 @@ DepositInfo _createMockDeposit({
     txid: txid,
     vout: vout ?? 0,
     amountSats: amountSats,
+    isMature: true,
     claimError: claimError,
     refundTx: refundTx,
     refundTxId: refundTxId,

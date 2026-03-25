@@ -63,10 +63,10 @@ dependencies:
   lottie: ^3.3.2
   keyboard_actions: ^4.2.1
 
-# dependency_overrides:
-#   # Local override for development (comment out for CI/release builds)
-#   breez_sdk_spark_flutter:
-#     path: ../spark-sdk/packages/flutter
+dependency_overrides:
+  # Local override for development (comment out for CI/release builds)
+  breez_sdk_spark_flutter:
+    path: ../spark-sdk/packages/flutter
 
 dev_dependencies:
   # Linting
