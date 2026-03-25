@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/core/services/transaction_formatter.dart';
+import 'package:glow/features/fiat_currencies/providers/fiat_currency_provider.dart';
+import 'package:glow/features/fiat_currencies/widgets/currency_converter_bottom_sheet.dart';
 import 'package:glow/providers/sdk_provider.dart';
 
 /// Widget for entering payment amount
@@ -78,6 +80,12 @@ class _AmountInputCardState extends ConsumerState<AmountInputCard> {
                       prefixIcon: const SizedBox.shrink(),
                       label: const Text('Amount in sats'),
                       contentPadding: EdgeInsets.zero,
+                      suffixIcon: _FiatConverterButton(
+                        onSatAmountReceived: (BigInt sats) {
+                          widget.controller.text = sats.toString();
+                          widget.onChanged?.call();
+                        },
+                      ),
                       errorStyle: TextStyle(
                         fontSize: 18.0,
                         color: Theme.of(context).colorScheme.error,
@@ -224,6 +232,43 @@ class _PaymentLimitsHelper extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Fiat converter icon button shown as suffix in the amount input field.
+/// Opens the currency converter bottom sheet and populates the amount.
+class _FiatConverterButton extends ConsumerWidget {
+  const _FiatConverterButton({required this.onSatAmountReceived});
+
+  final ValueChanged<BigInt> onSatAmountReceived;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool hasFiat = ref.watch(
+      fiatCurrencyProvider.select(
+        (AsyncValue<dynamic> state) =>
+            state.hasValue && state.value != null,
+      ),
+    );
+
+    if (!hasFiat) {
+      return const SizedBox.shrink();
+    }
+
+    return IconButton(
+      icon: Image.asset(
+        'assets/icon/btc_convert.png',
+        width: 24,
+        height: 24,
+        color: IconTheme.of(context).color,
+      ),
+      onPressed: () async {
+        final BigInt? result = await showCurrencyConverterSheet(context);
+        if (result != null) {
+          onSatAmountReceived(result);
+        }
+      },
     );
   }
 }

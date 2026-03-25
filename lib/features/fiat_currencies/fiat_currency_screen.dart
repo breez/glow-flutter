@@ -4,7 +4,7 @@ import 'package:glow/features/fiat_currencies/fiat_currency_layout.dart';
 import 'package:glow/features/fiat_currencies/models/fiat_state.dart';
 import 'package:glow/features/fiat_currencies/providers/fiat_currency_provider.dart';
 
-/// Container widget for fiat currency selection screen.
+/// Container widget for fiat currency settings screen.
 /// Reads the fiat currency provider and passes state to the layout.
 class FiatCurrencyScreen extends ConsumerWidget {
   const FiatCurrencyScreen({super.key});
@@ -18,10 +18,13 @@ class FiatCurrencyScreen extends ConsumerWidget {
     return fiatState.when(
       data: (FiatCurrencyState state) => FiatCurrencyLayout(
         state: state,
-        onCurrencySelected: (String? currencyId) {
+        onCurrencyToggled: (String currencyId) {
+          ref.read(fiatCurrencyProvider.notifier).toggleCurrency(currencyId);
+        },
+        onCurrenciesReordered: (int oldIndex, int newIndex) {
           ref
               .read(fiatCurrencyProvider.notifier)
-              .setPreferredCurrency(currencyId);
+              .reorderCurrencies(oldIndex, newIndex);
         },
       ),
       loading: () => const Scaffold(

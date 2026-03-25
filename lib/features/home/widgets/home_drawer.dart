@@ -43,9 +43,9 @@ class HomeDrawer extends StatelessWidget {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
-                        child: _DrawerItem(
+                        child: _DrawerImageItem(
                           title: 'Fiat Currency',
-                          icon: Icons.currency_exchange,
+                          imagePath: 'assets/icon/fiat_currencies.png',
                           onTap: () {
                             Navigator.pop(context);
                             Navigator.pushNamed(context, AppRoutes.fiatCurrencies);
@@ -179,6 +179,44 @@ class _DrawerItem extends StatelessWidget {
           title: Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(title)),
           onTap: onTap,
         ),
+      ),
+    );
+  }
+}
+
+class _DrawerImageItem extends StatelessWidget {
+  final String title;
+  final String imagePath;
+  final VoidCallback? onTap;
+
+  const _DrawerImageItem({
+    required this.title,
+    required this.imagePath,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: ListTile(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
+        ),
+        leading: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Image.asset(
+            imagePath,
+            width: 26,
+            height: 26,
+            color: IconTheme.of(context).color,
+          ),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(title),
+        ),
+        onTap: onTap,
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/features/balance/balance_display_layout.dart';
 import 'package:glow/features/balance/models/balance_state.dart';
 import 'package:glow/features/balance/providers/balance_providers.dart';
+import 'package:glow/features/fiat_currencies/providers/fiat_currency_provider.dart';
 
 /// BalanceDisplay widget - handles setup and dependency injection
 /// - BalanceDisplay: handles setup
@@ -21,7 +22,7 @@ class BalanceDisplay extends ConsumerWidget {
     return BalanceDisplayLayout(
       state: state,
       onBalanceTap: _onBalanceTap,
-      onFiatBalanceTap: _onFiatBalanceTap,
+      onFiatBalanceTap: () => _onFiatBalanceTap(ref),
       scrollOffsetFactor: scrollOffsetFactor,
     );
   }
@@ -32,9 +33,8 @@ class BalanceDisplay extends ConsumerWidget {
     // (e.g., from BTC to SAT or vice versa, or hide balance)
   }
 
-  /// Handle tap on fiat conversion area
-  void _onFiatBalanceTap() {
-    // TODO(erdemyerebasmaz): Change preferred Fiat Currency to the next one
-    // (e.g., from USD to EUR or vice versa)
+  /// Handle tap on fiat conversion area - cycle to next preferred currency
+  void _onFiatBalanceTap(WidgetRef ref) {
+    ref.read(fiatCurrencyProvider.notifier).cycleDashboardCurrency();
   }
 }

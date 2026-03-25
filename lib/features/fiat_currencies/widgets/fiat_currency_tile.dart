@@ -1,18 +1,23 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 
-/// List tile for a single fiat currency option.
+/// CheckboxListTile for a single fiat currency in the settings screen.
+/// Shows currency name, ID with symbol, and a checkbox for selection.
 class FiatCurrencyTile extends StatelessWidget {
   const FiatCurrencyTile({
     required this.currency,
-    required this.isSelected,
-    required this.onTap,
+    required this.isPreferred,
+    required this.onToggle,
+    this.isLastPreferred = false,
     super.key,
   });
 
   final FiatCurrency currency;
-  final bool isSelected;
-  final VoidCallback onTap;
+  final bool isPreferred;
+  final VoidCallback onToggle;
+
+  /// If true, this is the last preferred currency and cannot be unchecked.
+  final bool isLastPreferred;
 
   @override
   Widget build(BuildContext context) {
@@ -20,24 +25,43 @@ class FiatCurrencyTile extends StatelessWidget {
         currency.info.uniqSymbol?.grapheme ??
         '';
 
-    return ListTile(
-      title: Text(currency.info.name),
-      subtitle: Text(currency.id),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          if (symbolText.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: Text(
-                symbolText,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
+    final String titleText = symbolText.isNotEmpty
+        ? '${currency.id} ($symbolText)'
+        : currency.id;
+
+    return CheckboxListTile(
+      value: isPreferred,
+      onChanged: (bool? value) {
+        if (isLastPreferred && isPreferred) {
+          // Prevent unchecking the last preferred currency
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('At least one currency must be selected'),
+              duration: Duration(seconds: 2),
             ),
-          if (isSelected) const Icon(Icons.check, color: Colors.green),
-        ],
+          );
+          return;
+        }
+        onToggle();
+      },
+      title: Text(
+        titleText,
+        style: const TextStyle(
+          fontSize: 16.3,
+          letterSpacing: 0.25,
+        ),
       ),
-      onTap: onTap,
+      subtitle: Text(
+        currency.info.name,
+        style: TextStyle(
+          fontSize: 14.3,
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+            alpha: 0.6,
+          ),
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+      controlAffinity: ListTileControlAffinity.leading,
     );
   }
 }
