@@ -17,11 +17,17 @@ final Provider<InputHandler> inputHandlerProvider = Provider<InputHandler>((Ref 
 /// Handles parsed payment inputs and routes to appropriate screens
 class InputHandler {
   final Ref _ref;
+  bool _isProcessing = false;
 
   InputHandler(this._ref);
 
   /// Handle a payment input string and navigate to the appropriate screen
   Future<void> handleInput(BuildContext context, String input) async {
+    if (_isProcessing) {
+      _log.w('Already processing input, ignoring duplicate');
+      return;
+    }
+    _isProcessing = true;
     _log.i('Handling input');
 
     try {
@@ -59,6 +65,8 @@ class InputHandler {
           ),
         );
       }
+    } finally {
+      _isProcessing = false;
     }
   }
 
