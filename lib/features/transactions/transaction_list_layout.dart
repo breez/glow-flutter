@@ -31,11 +31,18 @@ class TransactionListLayout extends StatelessWidget {
     }
 
     if (state.isEmpty) {
-      if (state.hasActiveFilter) {
-        return const Center(child: Text('No transactions match your filter'));
-      } else {
-        return const TransactionListEmpty();
-      }
+      return ListView(
+        controller: scrollController,
+        physics: const NeverScrollableScrollPhysics(),
+        children: <Widget>[
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.4,
+            child: state.hasActiveFilter
+                ? const Center(child: Text('No transactions match your filter'))
+                : const TransactionListEmpty(),
+          ),
+        ],
+      );
     }
 
     return _buildTransactionList(context);
