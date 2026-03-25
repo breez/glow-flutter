@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart' hide PaymentStatus;
 import 'package:flutter/material.dart';
 import 'package:glow/core/services/transaction_formatter.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/lnurl/models/lnurl_pay_state.dart';
 import 'package:glow/features/send_payment/widgets/amount_input_card.dart';
 import 'package:glow/features/send_payment/widgets/payment_bottom_nav.dart';
@@ -79,6 +80,7 @@ class _LnurlPayLayoutState extends State<LnurlPayLayout> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const GlowBackButton(),
         title: Text(title),
         centerTitle: false, // Left-aligned
       ),

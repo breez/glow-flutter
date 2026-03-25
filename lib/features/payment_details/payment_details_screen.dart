@@ -32,13 +32,11 @@ final ProviderFamily<PaymentDetailsState?, String> paymentDetailsStateByIdProvid
 
       return paymentsAsync.when(
         data: (List<Payment> payments) {
-          // Find payment by ID
           Payment? payment;
           try {
             payment = payments.firstWhere((Payment p) => p.id == paymentId);
             log.d('Found payment $paymentId with status: ${payment.status}');
           } catch (e) {
-            // Payment not found
             log.w('Payment $paymentId not found in list');
             payment = null;
           }
@@ -56,25 +54,12 @@ final ProviderFamily<PaymentDetailsState?, String> paymentDetailsStateByIdProvid
       );
     });
 
-/// Screen widget responsible for setting up dependencies and injecting state
-/// - PaymentDetailsScreen: handles setup and dependency injection
-/// - PaymentDetailsLayout: pure presentation widget
-class PaymentDetailsScreen extends ConsumerWidget {
-  const PaymentDetailsScreen({required this.payment, super.key});
-
-  final Payment payment;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the payment by ID to get real-time updates
-    final PaymentDetailsState? state = ref.watch(paymentDetailsStateByIdProvider(payment.id));
-
-    // If state is null (payment not found or still loading), show loading indicator
-    if (state == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    // Return pure presentation widget with live payment data
-    return PaymentDetailsLayout(state: state);
+/// Shows the payment details bottom sheet for a given payment.
+void showPaymentDetails(BuildContext context, WidgetRef ref, Payment payment) {
+  final PaymentDetailsState? state = ref.read(paymentDetailsStateByIdProvider(payment.id));
+  if (state == null) {
+    return;
   }
+
+  showPaymentDetailsSheet(context, state);
 }

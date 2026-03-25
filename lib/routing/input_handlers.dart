@@ -17,11 +17,17 @@ final Provider<InputHandler> inputHandlerProvider = Provider<InputHandler>((Ref 
 /// Handles parsed payment inputs and routes to appropriate screens
 class InputHandler {
   final Ref _ref;
+  bool _isProcessing = false;
 
   InputHandler(this._ref);
 
   /// Handle a payment input string and navigate to the appropriate screen
   Future<void> handleInput(BuildContext context, String input) async {
+    if (_isProcessing) {
+      _log.w('Already processing input, ignoring duplicate');
+      return;
+    }
+    _isProcessing = true;
     _log.i('Handling input');
 
     try {
@@ -59,6 +65,8 @@ class InputHandler {
           ),
         );
       }
+    } finally {
+      _isProcessing = false;
     }
   }
 
@@ -104,13 +112,8 @@ class InputHandler {
         Navigator.pushNamed(context, AppRoutes.sendSilentPayment, arguments: details);
       },
       lnurlAuth: (LnurlAuthRequestDetails details) {
-        _log.w('LNURL-Auth input type not supported');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unsupported input'),
-            padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
-          ),
-        );
+        _log.i('Navigating to LNURL-Auth screen');
+        Navigator.pushNamed(context, AppRoutes.lnurlAuth, arguments: details);
       },
       url: (_) {
         _log.w('URL input type not supported');
@@ -181,13 +184,8 @@ class InputHandler {
         Navigator.pushReplacementNamed(context, AppRoutes.sendSilentPayment, arguments: details);
       },
       lnurlAuth: (LnurlAuthRequestDetails details) {
-        _log.w('LNURL-Auth input type not supported');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unsupported input'),
-            padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
-          ),
-        );
+        _log.i('Navigating to LNURL-Auth screen');
+        Navigator.pushNamed(context, AppRoutes.lnurlAuth, arguments: details);
       },
       url: (_) {
         _log.w('URL input type not supported');

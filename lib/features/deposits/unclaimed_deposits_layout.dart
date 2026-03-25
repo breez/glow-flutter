@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/deposits/models/unclaimed_deposits_state.dart';
 import 'package:glow/features/deposits/widgets/empty_deposits_state.dart';
 
@@ -23,7 +24,7 @@ class UnclaimedDepositsLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pending Deposits')),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Pending Deposits')),
       body: SafeArea(
         child: switch (depositsAsync) {
           AsyncData<List<DepositCardData>>(:final List<DepositCardData> value) => _DepositsListView(

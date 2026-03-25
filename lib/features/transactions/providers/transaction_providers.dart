@@ -23,9 +23,9 @@ final Provider<AsyncValue<List<Payment>>> filteredPaymentsProvider =
           );
 
           final bool afterStartDate =
-              filterState.startDate == null || paymentDate.isAfter(filterState.startDate!);
+              filterState.startDate == null || !paymentDate.isBefore(filterState.startDate!);
           final bool beforeEndDate =
-              filterState.endDate == null || paymentDate.isBefore(filterState.endDate!);
+              filterState.endDate == null || !paymentDate.isAfter(filterState.endDate!);
           final bool ofPaymentType =
               filterState.paymentTypes.isEmpty ||
               filterState.paymentTypes.contains(payment.paymentType);

@@ -24,21 +24,11 @@ class TransactionFormatter {
   // Bitcoin conversion constants
   static const int _satoshisPerBitcoin = 100000000;
 
-  /// Formats sats with thousand separators (spaces)
+  static final NumberFormat _satsFormat = NumberFormat.decimalPattern(Platform.localeName);
+
+  /// Formats sats with locale-aware thousand separators
   String formatSats(BigInt sats) {
-    final String str = sats.toString();
-    final StringBuffer buffer = StringBuffer();
-    final int length = str.length;
-
-    for (int i = 0; i < length; i++) {
-      buffer.write(str[i]);
-      final int position = length - i - 1;
-      if (position > 0 && position % 3 == 0) {
-        buffer.write(' ');
-      }
-    }
-
-    return buffer.toString();
+    return _satsFormat.format(sats.toInt());
   }
 
   /// Formats sats to BTC with proper decimal places (8 decimals)
@@ -55,11 +45,19 @@ class TransactionFormatter {
     };
   }
 
-  /// Converts sats to fiat using exchange rate
-  String formatFiat(BigInt sats, double exchangeRate, String currencySymbol) {
+  /// Converts sats to fiat using exchange rate with locale-aware formatting
+  String formatFiat(BigInt sats, double exchangeRate, String currencyCode) {
     final double btc = sats.toDouble() / _satoshisPerBitcoin;
     final double fiatValue = btc * exchangeRate;
-    return '$currencySymbol${fiatValue.toStringAsFixed(2)}';
+    try {
+      final NumberFormat fiatFormat = NumberFormat.simpleCurrency(
+        locale: Platform.localeName,
+        name: currencyCode,
+      );
+      return fiatFormat.format(fiatValue);
+    } catch (_) {
+      return '${fiatValue.toStringAsFixed(2)} $currencyCode';
+    }
   }
 
   /// Parses a string amount to satoshis

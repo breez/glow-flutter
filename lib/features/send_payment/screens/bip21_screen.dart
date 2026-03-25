@@ -1,6 +1,7 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:glow/widgets/back_button.dart';
 import 'package:glow/features/send_payment/models/bip21_state.dart';
 import 'package:glow/features/send_payment/providers/bip21_provider.dart';
 import 'package:glow/features/send_payment/screens/bip21_layout.dart';
@@ -56,7 +57,7 @@ class Bip21Screen extends ConsumerWidget {
       // Show loading while navigating
       _log.d('Showing processing screen for single payment method');
       return Scaffold(
-        appBar: AppBar(title: const Text('Send Payment')),
+        appBar: AppBar(leading: const GlowBackButton(), title: const Text('Send Payment')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }

@@ -47,7 +47,7 @@ class BottomNavButton extends StatelessWidget {
       padding:
           padding ??
           EdgeInsets.only(
-            bottom: !stickToBottom ? MediaQuery.of(context).viewInsets.bottom + 40.0 : 40.0,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 40.0,
           ),
       child: Column(
         mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,

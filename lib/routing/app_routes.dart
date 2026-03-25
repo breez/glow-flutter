@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/features/deposits/unclaimed_deposits_screen.dart';
 import 'package:glow/features/developers/developers_screen.dart';
+import 'package:glow/features/fiat_currencies/fiat_currency_screen.dart';
 import 'package:glow/features/lnurl/screens/lnurl_auth_screen.dart';
 import 'package:glow/features/lnurl/screens/lnurl_pay_screen.dart';
 import 'package:glow/features/lnurl/screens/lnurl_withdraw_screen.dart';
-import 'package:glow/features/payment_details/payment_details_screen.dart';
+
 import 'package:glow/features/qr_scan/qr_scan_view.dart';
 import 'package:glow/features/receive/receive_screen.dart';
 import 'package:glow/features/send/send_screen.dart';
@@ -39,9 +40,6 @@ class AppRoutes {
   // Core routes
   static const String homeScreen = '/';
   static const String qrScan = '/qr_scan';
-
-  // Payment routes
-  static const String paymentDetails = '/payment/details';
 
   // Wallet routes
   static const String walletSetup = '/wallet/setup';
@@ -78,6 +76,9 @@ class AppRoutes {
   static const String appSettings = '/settings';
   static const String pinSetup = '/settings/pin_setup';
 
+  // Fiat currency routes
+  static const String fiatCurrencies = '/fiat_currencies';
+
   // Developers routes
   static const String developersScreen = '/developers';
 
@@ -89,14 +90,6 @@ class AppRoutes {
       // QR Scanner
       case qrScan:
         return MaterialPageRoute<String>(builder: (_) => const QRScanView());
-
-      // Payment details
-      case paymentDetails:
-        final Payment args = settings.arguments as Payment;
-        return MaterialPageRoute<PaymentDetailsScreen>(
-          builder: (_) => PaymentDetailsScreen(payment: args),
-          settings: settings,
-        );
 
       // Wallet routes
       case walletSetup:
@@ -276,6 +269,13 @@ class AppRoutes {
       case pinSetup:
         return MaterialPageRoute<PinSetupScreen>(
           builder: (_) => const PinSetupScreen(),
+          settings: settings,
+        );
+
+      // Fiat currency routes
+      case fiatCurrencies:
+        return MaterialPageRoute<FiatCurrencyScreen>(
+          builder: (_) => const FiatCurrencyScreen(),
           settings: settings,
         );
 

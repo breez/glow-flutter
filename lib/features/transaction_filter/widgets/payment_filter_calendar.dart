@@ -46,6 +46,9 @@ class PaymentsFilterCalendar extends ConsumerWidget {
                 // Adjust the end date to be the end of that day to include all transactions.
                 final DateTime endDate = picked.end.add(const Duration(days: 1, milliseconds: -1));
                 ref.read(transactionFilterProvider.notifier).setDateRange(picked.start, endDate);
+              } else {
+                // User pressed "Clear" — remove the date filter
+                ref.read(transactionFilterProvider.notifier).clearDateRange();
               }
             }
           : null,

@@ -58,12 +58,7 @@ class PaymentDetailsDemoScreen extends StatelessWidget {
   }
 
   void _openDemo(BuildContext context, PaymentDetailsState state) {
-    Navigator.push(
-      context,
-      MaterialPageRoute<PaymentDetailsLayout>(
-        builder: (BuildContext context) => PaymentDetailsLayout(state: state),
-      ),
-    );
+    showPaymentDetailsSheet(context, state);
   }
 
   // Demo state factories

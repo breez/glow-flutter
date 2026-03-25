@@ -22,7 +22,6 @@ void main() {
         txid: txid ?? 'test_txid_${DateTime.now().millisecondsSinceEpoch}',
         vout: vout ?? 0,
         amountSats: amountSats,
-        isMature: true,
         claimError: claimError,
         refundTx: refundTx,
         refundTxId: refundTxId,

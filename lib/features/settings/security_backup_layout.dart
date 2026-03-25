@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glow/widgets/back_button.dart';
 
 /// Lock interval options for the dropdown
 const List<({int value, String label})> _lockIntervalOptions = <({int value, String label})>[
@@ -43,7 +44,7 @@ class SecurityBackupLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Security & Backup')),
+      appBar: AppBar(leading: const GlowBackButton(), title: const Text('Security & Backup')),
       body: SafeArea(
         child: ListView(
           children: <Widget>[
