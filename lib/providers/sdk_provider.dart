@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:collection/collection.dart';
@@ -67,12 +68,29 @@ final FutureProvider<BreezSdk> sdkProvider = FutureProvider<BreezSdk>((Ref ref) 
   }
 
   final WalletStorageService storage = ref.read(walletStorageServiceProvider);
-  final String? mnemonic = await storage.loadMnemonic(walletId);
-  log.d('Mnemonic loaded: ${mnemonic != null}');
 
-  if (mnemonic == null) {
-    log.e('Wallet mnemonic not found');
-    throw Exception('Wallet mnemonic not found');
+  // Determine auth method from wallet metadata
+  final List<WalletMetadata> wallets = await ref.read(walletListProvider.future);
+  final WalletMetadata? walletMeta = wallets.firstWhereOrNull((WalletMetadata w) => w.id == walletId);
+  final WalletAuthMethod authMethod = walletMeta?.authMethod ?? WalletAuthMethod.mnemonic;
+  log.d('Wallet auth method: ${authMethod.name}');
+
+  final Seed seed;
+  switch (authMethod) {
+    case WalletAuthMethod.mnemonic:
+      final String? mnemonic = await storage.loadMnemonic(walletId);
+      if (mnemonic == null) {
+        log.e('Wallet mnemonic not found');
+        throw Exception('Wallet mnemonic not found');
+      }
+      seed = Seed.mnemonic(mnemonic: mnemonic);
+    case WalletAuthMethod.passkey:
+      final Uint8List? seedBytes = await storage.loadSeed(walletId);
+      if (seedBytes == null) {
+        log.e('Wallet seed not found');
+        throw Exception('Wallet seed not found');
+      }
+      seed = Seed.entropy(seedBytes);
   }
 
   // Create config with app settings and user preferences
@@ -83,7 +101,7 @@ final FutureProvider<BreezSdk> sdkProvider = FutureProvider<BreezSdk>((Ref ref) 
   );
 
   final BreezSdkService service = ref.read(breezSdkServiceProvider);
-  return await service.connect(walletId: walletId, mnemonic: mnemonic, config: config);
+  return await service.connect(walletId: walletId, seed: seed, config: config);
 });
 
 /// Node info - only updates when data actually changes
@@ -248,7 +266,14 @@ final Provider<void> sdkEventListenerProvider = Provider<void>((Ref ref) {
           // TODO(erdemyerebasmaz): handle optimization events
         },
         lightningAddressChanged: (LightningAddressInfo? lightningAddress) {
+<<<<<<< HEAD
           log.i('Lightning address changed: ${lightningAddress?.lightningAddress}');
+=======
+          log.i('Lightning address changed');
+        },
+        newDeposits: (List<DepositInfo> newDeposits) {
+          log.i('New deposits: ${newDeposits.length}');
+>>>>>>> 8b78b5e (Add passkey wallet creation and entropy-based SDK connection)
         },
       );
     });

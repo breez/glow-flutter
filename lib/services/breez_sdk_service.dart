@@ -13,7 +13,7 @@ class BreezSdkService with LoggerMixin {
   /// Connect to Breez SDK with wallet-specific storage
   Future<BreezSdk> connect({
     required String walletId,
-    required String mnemonic,
+    required Seed seed,
     required Config config,
   }) async {
     log.i('Connecting SDK for wallet: $walletId on ${config.network.name}');
@@ -25,7 +25,7 @@ class BreezSdkService with LoggerMixin {
       final BreezSdk sdk = await breez_sdk_spark.connect(
         request: ConnectRequest(
           config: config,
-          seed: Seed.mnemonic(mnemonic: mnemonic),
+          seed: seed,
           storageDir: storageDir,
         ),
       );

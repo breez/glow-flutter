@@ -46,6 +46,33 @@ class OnboardingStateNotifier extends Notifier<OnboardingState> {
       rethrow;
     }
   }
+
+  /// Creates a new passkey wallet and sets it as active
+  Future<WalletMetadata> createWalletWithPasskey() async {
+    if (state.isLoading) {
+      throw Exception('Wallet creation already in progress');
+    }
+
+    setLoading(true);
+
+    try {
+      log.i('Creating passkey wallet');
+
+      final WalletMetadata wallet = await ref
+          .read(walletListProvider.notifier)
+          .createWalletWithPasskey();
+
+      await ref.read(activeWalletProvider.notifier).setActiveWallet(wallet.id);
+
+      log.i('Passkey wallet created and activated: ${wallet.id} (${wallet.displayName})');
+      setLoading(false);
+      return wallet;
+    } catch (e, stack) {
+      log.e('Failed to create passkey wallet', error: e, stackTrace: stack);
+      setLoading(false);
+      rethrow;
+    }
+  }
 }
 
 final NotifierProvider<OnboardingStateNotifier, OnboardingState> walletOnboardingStateProvider =

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/logging/app_logger.dart';
@@ -48,6 +50,62 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
       return (wallet, mnemonic);
     } catch (e, stack) {
       log.e('Failed to create wallet', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  /// Create a wallet using platform passkey PRF.
+  ///
+  /// Uses [PasskeyPrfProvider] to derive a seed from the device passkey.
+  /// If no passkey exists for the RP ID, one is registered automatically.
+  Future<WalletMetadata> createWalletWithPasskey({Profile? profile}) async {
+    try {
+      final Profile walletProfile = profile ?? generateProfile();
+      log.i('Creating passkey wallet: ${walletProfile.displayName}');
+
+      final PasskeyPrfProvider prfProvider = PasskeyPrfProvider(
+        const PasskeyPrfProviderOptions(rpName: 'Glow', userName: 'Glow', userDisplayName: 'Glow'),
+      );
+      final Passkey passkey = Passkey(
+        derivePrfSeed: prfProvider.derivePrfSeed,
+        isPrfAvailable: prfProvider.isPrfAvailable,
+      );
+
+      final Wallet wallet = await passkey.getWallet(label: 'Default');
+
+      // Extract entropy bytes from the seed
+      final Seed seed = wallet.seed;
+      final Uint8List seedBytes;
+      switch (seed) {
+        case Seed_Entropy(:final Uint8List field0):
+          seedBytes = field0;
+        case Seed_Mnemonic():
+          throw Exception('Passkey wallet returned mnemonic seed unexpectedly');
+      }
+
+      final String walletId = WalletStorageService.generateWalletIdFromBytes(seedBytes);
+
+      // Check for duplicate
+      final List<WalletMetadata> existingWallets = state.value ?? <WalletMetadata>[];
+      if (existingWallets.any((WalletMetadata w) => w.id == walletId)) {
+        log.i('Passkey wallet already exists: $walletId');
+        return existingWallets.firstWhere((WalletMetadata w) => w.id == walletId);
+      }
+
+      final WalletMetadata metadata = WalletMetadata(
+        id: walletId,
+        profile: walletProfile,
+        isVerified: true,
+        authMethod: WalletAuthMethod.passkey,
+      );
+
+      await _storage!.addPasskeyWallet(metadata, seedBytes);
+      state = AsyncValue<List<WalletMetadata>>.data(<WalletMetadata>[...existingWallets, metadata]);
+
+      log.i('Created passkey wallet: $walletId (${walletProfile.displayName})');
+      return metadata;
+    } catch (e, stack) {
+      log.e('Failed to create passkey wallet', error: e, stackTrace: stack);
       rethrow;
     }
   }
