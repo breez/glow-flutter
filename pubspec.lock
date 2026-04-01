@@ -524,11 +524,12 @@ packages:
   image_cropper:
     dependency: "direct main"
     description:
-      name: image_cropper
-      sha256: d2555be1ec4b7b12fc502ede481c846ad44578fbb0748debd4c648b25ca07cad
-      url: "https://pub.dev"
-    source: hosted
-    version: "12.1.1"
+      path: image_cropper
+      ref: "fix/issue-609-tocrop-viewcontroller"
+      resolved-ref: f2894eb4b2e977335f32d2145b1cf019bedd7616
+      url: "https://github.com/Digvijaysinh2204/flutter_image_cropper.git"
+    source: git
+    version: "12.1.2"
   image_cropper_for_web:
     dependency: transitive
     description:
