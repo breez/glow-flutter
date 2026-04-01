@@ -16,6 +16,25 @@ import 'package:logger/logger.dart';
 
 final Logger log = AppLogger.getLogger('SdkProvider');
 
+/// In-memory seed cache for passkey wallets.
+///
+/// Populated during onboarding so the SDK provider can connect immediately
+/// without triggering a second passkey prompt. Consumed on first read.
+class PasskeySeedCache {
+  PasskeySeedCache._();
+  static Seed? _seed;
+
+  /// Store a seed for one-time use by sdkProvider.
+  static void put(Seed seed) => _seed = seed;
+
+  /// Consume the cached seed (returns it and clears the cache).
+  static Seed? take() {
+    final Seed? seed = _seed;
+    _seed = null;
+    return seed;
+  }
+}
+
 /// Track if Lightning Address was manually deleted (to prevent auto-registration)
 class LightningAddressManuallyDeletedNotifier extends Notifier<bool> {
   @override
@@ -54,17 +73,14 @@ lightningAddressManuallyDeletedProvider =
 /// Connected SDK instance - auto-reconnects on wallet/network changes
 final FutureProvider<BreezSdk> sdkProvider = FutureProvider<BreezSdk>((Ref ref) async {
   final String? walletId = ref.watch(activeWalletIdProvider);
-  log.d('Active wallet id: $walletId');
   final Network network = ref.watch(networkProvider);
-  log.d('Network: $network');
-
   final MaxFee maxDepositClaimFee = ref.watch(maxDepositClaimFeeProvider);
-  log.d('Max deposit claim fee: $maxDepositClaimFee');
 
   if (walletId == null) {
-    log.e('No active wallet selected');
     throw Exception('No active wallet selected');
   }
+
+  log.d('Connecting SDK: wallet=$walletId, network=$network, maxFee=$maxDepositClaimFee');
 
   final WalletStorageService storage = ref.read(walletStorageServiceProvider);
 
@@ -84,17 +100,33 @@ final FutureProvider<BreezSdk> sdkProvider = FutureProvider<BreezSdk>((Ref ref) 
       }
       seed = Seed.mnemonic(mnemonic: mnemonic);
     case WalletAuthMethod.passkey:
-      // Re-derive seed from passkey on each connect — no secrets stored
-      log.i('Re-deriving seed from passkey');
-      final PasskeyPrfProvider prfProvider = PasskeyPrfProvider(
-        const PasskeyPrfProviderOptions(rpName: 'Glow', userName: 'Glow', userDisplayName: 'Glow'),
-      );
-      final Passkey passkey = Passkey(
-        derivePrfSeed: prfProvider.derivePrfSeed,
-        isPrfAvailable: prfProvider.isPrfAvailable,
-      );
-      final Wallet wallet = await passkey.getWallet(label: 'Default');
-      seed = wallet.seed;
+      // Check for cached seed from onboarding (avoids double-prompting)
+      final Seed? cached = PasskeySeedCache.take();
+      if (cached != null) {
+        log.i('Using cached passkey seed from onboarding');
+        seed = cached;
+      } else {
+        // Re-derive seed from passkey — triggers platform prompt.
+        // If the user cancels, clear the active wallet to stop retry loop.
+        log.i('Re-deriving seed from passkey (prompt required)');
+        try {
+          final PasskeyPrfProvider prfProvider = PasskeyPrfProvider(
+            const PasskeyPrfProviderOptions(rpName: 'Glow', userName: 'Glow', userDisplayName: 'Glow'),
+          );
+          final Passkey passkey = Passkey(
+            derivePrfSeed: prfProvider.derivePrfSeed,
+            isPrfAvailable: prfProvider.isPrfAvailable,
+          );
+          final String label = walletMeta?.passkeyLabel ?? 'Default';
+          log.d('Using passkey label: "$label"');
+          final Wallet wallet = await passkey.getWallet(label: label);
+          seed = wallet.seed;
+        } on PasskeyError catch (e) {
+          log.e('Passkey authentication failed during SDK connect', error: e);
+          await ref.read(activeWalletProvider.notifier).clearActiveWallet();
+          throw Exception('Passkey authentication required. Please select a wallet again.');
+        }
+      }
   }
 
   // Create config with app settings and user preferences
