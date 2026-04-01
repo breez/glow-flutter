@@ -1,3 +1,4 @@
+import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/widgets/back_button.dart';
@@ -7,6 +8,13 @@ import 'package:glow/features/wallet/models/wallet_metadata.dart';
 import 'package:glow/features/wallet/providers/wallet_provider.dart';
 import 'package:glow/features/wallet/services/wallet_storage_service.dart';
 import 'package:glow/features/wallet/widgets/empty_state.dart';
+import 'package:glow/features/wallet_onboarding/providers/onboarding_state_provider.dart';
+
+/// Whether platform passkey PRF is available on this device.
+final FutureProvider<bool> _isPrfAvailableProvider = FutureProvider<bool>((Ref ref) async {
+  final PasskeyPrfProvider provider = PasskeyPrfProvider();
+  return provider.isPrfAvailable();
+});
 
 class WalletListScreen extends ConsumerStatefulWidget {
   const WalletListScreen({super.key});
@@ -72,11 +80,18 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
   }
 
   Future<void> _showVerification(WalletMetadata wallet) async {
-    final String? mnemonic = await ref.read(walletStorageServiceProvider).loadMnemonic(wallet.id);
+    String? mnemonic;
+
+    if (wallet.isPasskey) {
+      // Derive mnemonic on demand via passkey prompt
+      mnemonic = await _derivePasskeyMnemonic(wallet);
+    } else {
+      mnemonic = await ref.read(walletStorageServiceProvider).loadMnemonic(wallet.id);
+    }
 
     if (mnemonic == null) {
       if (mounted) {
-        _showSnackBar('Failed to load mnemonic', Colors.red);
+        _showSnackBar('Failed to load recovery phrase', Colors.red);
       }
       return;
     }
@@ -87,6 +102,59 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
         AppRoutes.walletPhrase,
         arguments: <String, Object>{'wallet': wallet, 'mnemonic': mnemonic},
       );
+    }
+  }
+
+  /// Start the passkey label flow — detects existing passkey and opens
+  /// the onboarding flow at the label picker (auth-pick) phase.
+  /// On completion, switches to the new wallet and navigates home.
+  Future<void> _startPasskeyLabelFlow() async {
+    // Use the onboarding provider to run detection → auth-pick
+    await ref.read(walletOnboardingStateProvider.notifier).startPasskeyFlow();
+
+    if (!mounted) {
+      return;
+    }
+
+    // Navigate to the onboarding screen which will show the auth-pick UI
+    Navigator.pushNamed(context, AppRoutes.walletSetup);
+  }
+
+  /// Derive mnemonic from passkey PRF on demand (triggers platform prompt).
+  Future<String?> _derivePasskeyMnemonic(WalletMetadata wallet) async {
+    try {
+      log.i('Deriving mnemonic for passkey wallet: ${wallet.id}');
+      final PasskeyPrfProvider prfProvider = PasskeyPrfProvider(
+        const PasskeyPrfProviderOptions(rpName: 'Glow', userName: 'Glow', userDisplayName: 'Glow'),
+      );
+      final Passkey passkey = Passkey(
+        derivePrfSeed: prfProvider.derivePrfSeed,
+        isPrfAvailable: prfProvider.isPrfAvailable,
+      );
+      final Wallet derived = await passkey.getWallet(label: wallet.passkeyLabel ?? 'Default');
+      return switch (derived.seed) {
+        Seed_Mnemonic(:final String mnemonic) => mnemonic,
+        _ => null,
+      };
+    } on PasskeyError catch (e) {
+      log.e('Passkey derivation failed', error: e);
+      if (mounted) {
+        // Don't show error for user cancellation
+        final bool cancelled = switch (e) {
+          PasskeyError_PrfError(:final PasskeyPrfError field0) => switch (field0) {
+              PasskeyPrfError_UserCancelled() => true,
+              _ => false,
+            },
+          _ => false,
+        };
+        if (!cancelled) {
+          _showSnackBar('Passkey authentication failed', Colors.red);
+        }
+      }
+      return null;
+    } catch (e) {
+      log.e('Failed to derive passkey mnemonic', error: e);
+      return null;
     }
   }
 
@@ -192,28 +260,43 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
   }
 
   void _showAddWalletSheet() {
+    final bool isPrfAvailable = ref.read(_isPrfAvailableProvider).value ?? false;
     showModalBottomSheet(
       context: context,
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          ListTile(
-            leading: const Icon(Icons.add_circle_outline),
-            title: const Text('Create New Wallet'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, AppRoutes.walletCreate);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.download),
-            title: const Text('Import Wallet'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, AppRoutes.walletImport);
-            },
-          ),
-        ],
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            if (isPrfAvailable)
+              ListTile(
+                leading: const Icon(Icons.key),
+                title: const Text('Create with Passkey'),
+                subtitle: const Text('Add a new label to your passkey'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _startPasskeyLabelFlow();
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: const Text('Create New Wallet'),
+              subtitle: const Text('Generate a recovery phrase'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.walletCreate);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.download),
+              title: const Text('Import Wallet'),
+              subtitle: const Text('Restore from recovery phrase'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.walletImport);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -227,6 +310,12 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
         final bool isEditing = _editingWalletId == wallet.id;
 
         return ListTile(
+          subtitle: wallet.isPasskey && wallet.passkeyLabel != null
+              ? Text(
+                  'Label: ${wallet.passkeyLabel}',
+                  style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: .5)),
+                )
+              : null,
           title: isEditing
               ? TextField(
                   controller: _editControllers[wallet.id],
@@ -244,6 +333,27 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
                         ),
                       ),
                     ),
+                    if (wallet.isPasskey) ...<Widget>[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withValues(alpha: .1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(Icons.key, size: 10, color: Colors.amber),
+                            SizedBox(width: 4),
+                            Text(
+                              'PASSKEY',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     if (isActive) ...<Widget>[
                       const SizedBox(width: 8),
                       Container(
