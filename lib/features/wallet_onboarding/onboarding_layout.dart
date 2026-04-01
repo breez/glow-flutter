@@ -290,7 +290,7 @@ class _PasskeyFlowLayout extends StatelessWidget {
             ),
             onPressed: onConfirm,
             child: AutoSizeText(
-              'I understand',
+              'I UNDERSTAND',
               style: theme.textTheme.labelLarge,
               maxLines: 1,
             ),
@@ -403,7 +403,7 @@ class _PasskeyFlowLayout extends StatelessWidget {
                   }
                 : null,
             child: AutoSizeText(
-              'Continue',
+              'CONTINUE',
               style: theme.textTheme.labelLarge,
               maxLines: 1,
             ),
@@ -465,7 +465,7 @@ class _PasskeyFlowLayout extends StatelessWidget {
               ),
               onPressed: onRetry,
               child: AutoSizeText(
-                'Retry',
+                'RETRY',
                 style: theme.textTheme.labelLarge,
                 maxLines: 1,
               ),
@@ -492,7 +492,7 @@ class _PasskeyFlowLayout extends StatelessWidget {
         ),
         onPressed: onPressed ?? onBack,
         child: AutoSizeText(
-          'Go Back',
+          'GO BACK',
           style: theme.textTheme.labelLarge?.copyWith(color: Colors.white),
           maxLines: 1,
         ),
