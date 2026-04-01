@@ -70,8 +70,24 @@ lightningAddressManuallyDeletedProvider =
       LightningAddressManuallyDeletedNotifier.new,
     );
 
-/// Connected SDK instance - auto-reconnects on wallet/network changes
-final FutureProvider<BreezSdk> sdkProvider = FutureProvider<BreezSdk>((Ref ref) async {
+/// Connected SDK instance - auto-reconnects on wallet/network changes.
+///
+/// Auto-retry is disabled for passkey cancellation errors to prevent
+/// the platform prompt from re-appearing in a loop.
+final FutureProvider<BreezSdk> sdkProvider = FutureProvider<BreezSdk>(
+  retry: (int retryCount, Object error) {
+    // Don't retry passkey cancellation or missing wallet — user action required
+    final String msg = error.toString();
+    if (msg.contains('cancelled') || msg.contains('No active wallet')) {
+      return null;
+    }
+    // Default exponential backoff for transient errors (network, etc.)
+    if (retryCount > 7) {
+      return null;
+    }
+    return Duration(milliseconds: 200 * (1 << retryCount));
+  },
+  (Ref ref) async {
   final String? walletId = ref.watch(activeWalletIdProvider);
   final Network network = ref.watch(networkProvider);
   final MaxFee maxDepositClaimFee = ref.watch(maxDepositClaimFeeProvider);
