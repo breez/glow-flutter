@@ -284,14 +284,14 @@ class _PasskeyFlowLayout extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.secondary,
+              backgroundColor: theme.primaryColorLight,
               elevation: 0.0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
             ),
             onPressed: onConfirm,
             child: AutoSizeText(
               'I understand',
-              style: theme.textTheme.labelLarge?.copyWith(color: theme.primaryColor),
+              style: theme.textTheme.labelLarge,
               maxLines: 1,
             ),
           ),
@@ -388,7 +388,7 @@ class _PasskeyFlowLayout extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.secondary,
+              backgroundColor: theme.primaryColorLight,
               elevation: 0.0,
               disabledBackgroundColor: theme.disabledColor,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
@@ -404,7 +404,7 @@ class _PasskeyFlowLayout extends StatelessWidget {
                 : null,
             child: AutoSizeText(
               'Continue',
-              style: theme.textTheme.labelLarge?.copyWith(color: theme.primaryColor),
+              style: theme.textTheme.labelLarge,
               maxLines: 1,
             ),
           ),
@@ -459,14 +459,14 @@ class _PasskeyFlowLayout extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.secondary,
+                backgroundColor: theme.primaryColorLight,
                 elevation: 0.0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
               ),
               onPressed: onRetry,
               child: AutoSizeText(
                 'Retry',
-                style: theme.textTheme.labelLarge?.copyWith(color: theme.primaryColor),
+                style: theme.textTheme.labelLarge,
                 maxLines: 1,
               ),
             ),
@@ -665,48 +665,60 @@ class _ManualLabelInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Material(
-        color: isValid
-            ? theme.colorScheme.primary.withAlpha(30)
-            : theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: isValid
-              ? BorderSide(color: theme.colorScheme.primary, width: 1.5)
-              : BorderSide(color: theme.colorScheme.outline.withAlpha(80)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: TextField(
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: 'Label name',
-                    border: InputBorder.none,
-                    counterText: '',
-                    errorText: isDuplicate ? 'A label with this name already exists' : null,
-                    errorBorder: InputBorder.none,
-                    focusedErrorBorder: InputBorder.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Material(
+            color: isValid
+                ? theme.colorScheme.primary.withAlpha(30)
+                : theme.colorScheme.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: isDuplicate
+                  ? BorderSide(color: theme.colorScheme.error, width: 1.5)
+                  : isValid
+                      ? BorderSide(color: theme.colorScheme.primary, width: 1.5)
+                      : BorderSide(color: theme.colorScheme.outline.withAlpha(80)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextField(
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        hintText: 'Label name',
+                        border: InputBorder.none,
+                        counterText: '',
+                      ),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: isValid ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      maxLength: 24,
+                      onChanged: onChanged,
+                      controller: TextEditingController(text: value)
+                        ..selection = TextSelection.collapsed(offset: value.length),
+                    ),
                   ),
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: isValid ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  maxLength: 24,
-                  onChanged: onChanged,
-                  controller: TextEditingController(text: value)
-                    ..selection = TextSelection.collapsed(offset: value.length),
-                ),
+                  if (isValid)
+                    Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 20),
+                ],
               ),
-              if (isValid)
-                Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 20),
-            ],
+            ),
           ),
         ),
-      ),
+        if (isDuplicate)
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 4),
+            child: Text(
+              'A label with this name already exists',
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error),
+            ),
+          ),
+      ],
     );
   }
 }
