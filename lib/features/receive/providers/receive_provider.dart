@@ -39,7 +39,7 @@ class ReceiveNotifier extends Notifier<ReceiveState> {
           );
         });
       }
-    });
+    }, weak: true);
 
     // Schedule payment tracking to start after build completes
     Future<void>.microtask(() {

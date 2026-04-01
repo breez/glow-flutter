@@ -45,7 +45,7 @@ class PaymentTrackerNotifier extends Notifier<PaymentTrackingState> {
           newDeposits: (List<DepositInfo> newDeposits) {},
         );
       });
-    });
+    }, weak: true);
 
     return const NotTrackingPayment();
   }

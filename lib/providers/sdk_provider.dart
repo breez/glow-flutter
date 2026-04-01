@@ -49,7 +49,7 @@ class LightningAddressManuallyDeletedNotifier extends Notifier<bool> {
         log.d('Wallet changed, resetting LightningAddressManuallyDeleted state');
         state = false;
       }
-    });
+    }, weak: true);
     return false;
   }
 
@@ -425,7 +425,7 @@ class HasSyncedNotifier extends Notifier<bool> {
       AsyncValue<SdkEvent>? previous,
       AsyncValue<SdkEvent> next,
     ) {
-      (next as AsyncValue<SdkEvent>?)?.whenData((SdkEvent event) async {
+      next.whenData((SdkEvent event) async {
         if (event is SdkEvent_Synced) {
           final WalletMetadata? wallet = ref.read(activeWalletProvider).value;
           if (wallet == null) {
@@ -446,7 +446,7 @@ class HasSyncedNotifier extends Notifier<bool> {
           }
         }
       });
-    });
+    }, weak: true);
   }
 }
 

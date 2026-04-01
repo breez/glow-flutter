@@ -251,7 +251,7 @@ class ActiveWalletNotifier extends AsyncNotifier<WalletMetadata?> {
             }
           }
         });
-      });
+      }, weak: true);
 
       return wallet;
     }
