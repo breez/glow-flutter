@@ -239,6 +239,8 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
   Widget build(BuildContext context) {
     final AsyncValue<List<WalletMetadata>> wallets = ref.watch(walletListProvider);
     final AsyncValue<WalletMetadata?> activeWallet = ref.watch(activeWalletProvider);
+    // Eagerly resolve so it's ready when the add-wallet sheet opens
+    ref.watch(_isPrfAvailableProvider);
 
     return Scaffold(
       appBar: AppBar(
