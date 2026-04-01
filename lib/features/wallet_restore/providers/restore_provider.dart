@@ -46,10 +46,16 @@ class RestoreNotifier extends Notifier<RestoreState> with LoggerMixin {
 
       await ref.read(activeWalletProvider.notifier).setActiveWallet(wallet.id);
 
+      if (!ref.mounted) {
+        return wallet;
+      }
       state = state.copyWith(isLoading: false);
       return wallet;
     } catch (e) {
       log.e('Failed to restore wallet: ', error: e);
+      if (!ref.mounted) {
+        return null;
+      }
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),

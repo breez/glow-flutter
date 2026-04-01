@@ -205,6 +205,10 @@ class FiatCurrencyNotifier extends AsyncNotifier<FiatCurrencyState> {
         ratesMap[rate.coin] = rate.value;
       }
 
+      if (!ref.mounted) {
+        return;
+      }
+
       final FiatCurrencyState currentState = state.requireValue;
       state = AsyncValue<FiatCurrencyState>.data(
         currentState.copyWith(rates: ratesMap),
