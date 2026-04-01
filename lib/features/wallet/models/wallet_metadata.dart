@@ -25,11 +25,15 @@ class WalletMetadata {
   final bool isVerified;
   final WalletAuthMethod authMethod;
 
+  /// For passkey wallets: the label used to derive this wallet (e.g. "Default").
+  final String? passkeyLabel;
+
   const WalletMetadata({
     required this.id,
     required this.profile,
     this.isVerified = false,
     this.authMethod = WalletAuthMethod.mnemonic,
+    this.passkeyLabel,
   });
 
   /// Display name from profile (customName or "Color Animal")
@@ -38,12 +42,19 @@ class WalletMetadata {
   /// Whether this wallet uses passkey authentication.
   bool get isPasskey => authMethod == WalletAuthMethod.passkey;
 
-  WalletMetadata copyWith({String? id, Profile? profile, bool? isVerified, WalletAuthMethod? authMethod}) =>
+  WalletMetadata copyWith({
+    String? id,
+    Profile? profile,
+    bool? isVerified,
+    WalletAuthMethod? authMethod,
+    String? passkeyLabel,
+  }) =>
       WalletMetadata(
         id: id ?? this.id,
         profile: profile ?? this.profile,
         isVerified: isVerified ?? this.isVerified,
         authMethod: authMethod ?? this.authMethod,
+        passkeyLabel: passkeyLabel ?? this.passkeyLabel,
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -54,6 +65,7 @@ class WalletMetadata {
     'customImagePath': profile.customImagePath,
     'isVerified': isVerified,
     'authMethod': authMethod.name,
+    if (passkeyLabel != null) 'passkeyLabel': passkeyLabel,
   };
 
   factory WalletMetadata.fromJson(Map<String, dynamic> json) {
@@ -88,7 +100,15 @@ class WalletMetadata {
         ? WalletAuthMethod.values.byName(json['authMethod'] as String)
         : WalletAuthMethod.mnemonic;
 
-    return WalletMetadata(id: id, profile: profile, isVerified: isVerified, authMethod: authMethod);
+    final String? passkeyLabel = json['passkeyLabel'] as String?;
+
+    return WalletMetadata(
+      id: id,
+      profile: profile,
+      isVerified: isVerified,
+      authMethod: authMethod,
+      passkeyLabel: passkeyLabel,
+    );
   }
 
   @override
@@ -101,7 +121,8 @@ class WalletMetadata {
           other.profile.customName == profile.customName &&
           other.profile.customImagePath == profile.customImagePath &&
           other.isVerified == isVerified &&
-          other.authMethod == authMethod;
+          other.authMethod == authMethod &&
+          other.passkeyLabel == passkeyLabel;
 
   @override
   int get hashCode => Object.hash(
@@ -112,6 +133,7 @@ class WalletMetadata {
     profile.customImagePath,
     isVerified,
     authMethod,
+    passkeyLabel,
   );
 
   @override
