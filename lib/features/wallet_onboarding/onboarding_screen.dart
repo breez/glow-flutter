@@ -61,8 +61,12 @@ class WalletSetupScreen extends ConsumerWidget {
   }
 
   /// Exit passkey flow entirely.
-  void onPasskeyBack(WidgetRef ref) {
+  void onPasskeyBack(BuildContext context, WidgetRef ref) {
     ref.read(walletOnboardingStateProvider.notifier).cancelPasskeyFlow();
+    // If this screen was pushed (e.g. from wallet list), pop back
+    if (context.mounted && Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
   }
 
   /// Retry the current failed phase.
@@ -75,8 +79,13 @@ class WalletSetupScreen extends ConsumerWidget {
   }
 
   /// Phase-aware go-back from error.
-  void onPasskeyGoBackFromError(WidgetRef ref) {
+  void onPasskeyGoBackFromError(BuildContext context, WidgetRef ref) {
     ref.read(walletOnboardingStateProvider.notifier).goBackFromError();
+    // If flow was cancelled (state reset) and screen was pushed, pop back
+    final OnboardingState newState = ref.read(walletOnboardingStateProvider);
+    if (newState.passkeyPhase == null && context.mounted && Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
   }
 
   /// Select an existing label → connect.
@@ -120,9 +129,9 @@ class WalletSetupScreen extends ConsumerWidget {
       onPasskey: () => onPasskey(context, ref),
       onRestore: () => onRestore(context),
       onPasskeyConfirm: () => onPasskeyConfirm(context, ref),
-      onPasskeyBack: () => onPasskeyBack(ref),
+      onPasskeyBack: () => onPasskeyBack(context, ref),
       onPasskeyRetry: () => onPasskeyRetry(context, ref),
-      onPasskeyGoBackFromError: () => onPasskeyGoBackFromError(ref),
+      onPasskeyGoBackFromError: () => onPasskeyGoBackFromError(context, ref),
       onSelectLabel: (String label) => onSelectLabel(context, ref, label),
       onSelectNewLabel: (String label) => onSelectNewLabel(context, ref, label),
       onManualLabelChanged: (String value) => onManualLabelChanged(ref, value),
