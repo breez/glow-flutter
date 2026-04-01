@@ -12,6 +12,7 @@ class DevelopersLayout extends StatelessWidget {
   final VoidCallback onShowMaxFee;
   final GestureTapCallback onShareCurrentSession;
   final GestureTapCallback onShareAllLogs;
+  final VoidCallback onWipeAllData;
 
   const DevelopersLayout({
     required this.network,
@@ -20,6 +21,7 @@ class DevelopersLayout extends StatelessWidget {
     required this.onShowMaxFee,
     required this.onShareCurrentSession,
     required this.onShareAllLogs,
+    required this.onWipeAllData,
     super.key,
   });
 
@@ -34,6 +36,7 @@ class DevelopersLayout extends StatelessWidget {
             onManageWallets: kDebugMode ? onManageWallets : null,
             onShowNetworkSelector: kDebugMode ? onShowNetworkSelector : null,
             onShowMaxFee: onShowMaxFee,
+            onWipeAllData: kDebugMode ? onWipeAllData : null,
           ),
         ],
       ),

@@ -8,6 +8,8 @@ import 'package:glow/features/developers/providers/max_deposit_fee_provider.dart
 import 'package:glow/features/developers/providers/network_provider.dart';
 import 'package:glow/features/developers/widgets/max_fee_bottom_sheet.dart';
 import 'package:glow/features/developers/widgets/network_bottom_sheet.dart';
+import 'package:glow/features/wallet/providers/wallet_provider.dart';
+import 'package:glow/features/wallet/services/wallet_storage_service.dart';
 import 'package:glow/logging/app_logger.dart';
 import 'package:glow/providers/sdk_provider.dart';
 import 'package:glow/routing/app_routes.dart';
@@ -167,6 +169,77 @@ class DevelopersScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _wipeAllData(BuildContext context, WidgetRef ref) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final ThemeData theme = Theme.of(dialogContext);
+        return AlertDialog(
+          title: Row(
+            children: <Widget>[
+              Icon(Icons.warning_rounded, color: theme.colorScheme.error),
+              const SizedBox(width: 8),
+              const Text('Wipe All Data'),
+            ],
+          ),
+          content: const Text(
+            'This will permanently delete:\n\n'
+            '\u2022 All wallet metadata\n'
+            '\u2022 All stored mnemonics\n'
+            '\u2022 Active wallet selection\n'
+            '\u2022 First-sync tracking\n'
+            '\u2022 PIN settings\n\n'
+            'The SDK will be disconnected and you will be '
+            'returned to the onboarding screen.\n\n'
+            'This action cannot be undone.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text('Wipe Everything', style: TextStyle(color: theme.colorScheme.error)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    try {
+      // Clear all secure storage
+      final WalletStorageService storage = ref.read(walletStorageServiceProvider);
+      await storage.deleteAllData();
+
+      // Clear active wallet to stop SDK
+      await ref.read(activeWalletProvider.notifier).clearActiveWallet();
+
+      // Invalidate all providers to reset state
+      ref.invalidate(walletListProvider);
+      ref.invalidate(activeWalletProvider);
+      ref.invalidate(sdkProvider);
+
+      if (context.mounted) {
+        // Navigate to onboarding and clear the stack
+        Navigator.pushNamedAndRemoveUntil(context, AppRoutes.walletSetup, (_) => false);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to wipe data: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Network network = ref.watch(networkProvider);
@@ -179,6 +252,7 @@ class DevelopersScreen extends ConsumerWidget {
       onShowMaxFee: () => _showMaxFeeBottomSheet(context, ref, maxDepositClaimFee),
       onShareCurrentSession: () => _shareCurrentSession(context),
       onShareAllLogs: () => _shareAllLogs(context),
+      onWipeAllData: () => _wipeAllData(context, ref),
     );
   }
 }

@@ -254,6 +254,16 @@ class WalletStorageService with LoggerMixin {
   // Utilities
   // ============================================================================
 
+  /// Delete ALL data from secure storage. Used for testing/debug only.
+  Future<void> deleteAllData() async {
+    try {
+      await _storage.deleteAll();
+      log.w('All secure storage data deleted');
+    } catch (e, stack) {
+      log.e('Failed to delete all data', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
 }
 
 final Provider<WalletStorageService> walletStorageServiceProvider = Provider<WalletStorageService>((

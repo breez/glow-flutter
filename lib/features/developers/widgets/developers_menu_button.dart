@@ -5,11 +5,13 @@ class DevelopersMenuButton extends StatelessWidget {
   final VoidCallback? onManageWallets;
   final VoidCallback? onShowNetworkSelector;
   final VoidCallback? onShowMaxFee;
+  final VoidCallback? onWipeAllData;
 
   const DevelopersMenuButton({
     this.onManageWallets,
     this.onShowNetworkSelector,
     this.onShowMaxFee,
+    this.onWipeAllData,
     super.key,
   });
 
@@ -65,6 +67,23 @@ class DevelopersMenuButton extends StatelessWidget {
       );
     }
 
+    // Wipe All Data - debug only, destructive
+    if (kDebugMode && onWipeAllData != null) {
+      items.add(const PopupMenuDivider());
+      items.add(
+        PopupMenuItem<String>(
+          value: 'wipe',
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.delete_forever, size: 20, color: Colors.red.shade300),
+              const SizedBox(width: 12),
+              Text('Wipe All Data', style: TextStyle(color: Colors.red.shade300)),
+            ],
+          ),
+        ),
+      );
+    }
+
     // Don't show menu if no items
     if (items.isEmpty) {
       return const SizedBox.shrink();
@@ -81,6 +100,9 @@ class DevelopersMenuButton extends StatelessWidget {
             break;
           case 'max_fee':
             onShowMaxFee?.call();
+            break;
+          case 'wipe':
+            onWipeAllData?.call();
             break;
         }
       },
