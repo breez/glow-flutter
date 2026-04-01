@@ -128,14 +128,14 @@ class _AnimatedLogoState extends State<AnimatedLogo> with SingleTickerProviderSt
                     1.0,
                   ), // Delayed fade-in
                   child: AutoSizeText(
-                    'TBD: Tagline Text',
+                    'Glow',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: .85),
-                      fontSize: 21.0,
+                      fontSize: 32.0,
                       height: 1.1,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.0,
                     ),
                   ),
                 ),
