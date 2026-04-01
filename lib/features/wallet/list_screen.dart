@@ -9,6 +9,7 @@ import 'package:glow/features/wallet/providers/wallet_provider.dart';
 import 'package:glow/features/wallet/services/wallet_storage_service.dart';
 import 'package:glow/features/wallet/widgets/empty_state.dart';
 import 'package:glow/features/wallet_onboarding/providers/onboarding_state_provider.dart';
+import 'package:glow/providers/sdk_provider.dart' show PasskeySeedCache;
 
 /// Whether platform passkey PRF is available on this device.
 final FutureProvider<bool> _isPrfAvailableProvider = FutureProvider<bool>((Ref ref) async {
@@ -159,6 +160,14 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
   }
 
   Future<void> _switchWallet(WalletMetadata wallet) async {
+    if (wallet.isPasskey) {
+      await _switchToPasskeyWallet(wallet);
+    } else {
+      await _switchToMnemonicWallet(wallet);
+    }
+  }
+
+  Future<void> _switchToMnemonicWallet(WalletMetadata wallet) async {
     try {
       await ref.read(activeWalletProvider.notifier).switchWallet(wallet.id);
       if (mounted) {
@@ -172,7 +181,62 @@ class _WalletListScreenState extends ConsumerState<WalletListScreen> with Logger
     } catch (e) {
       log.e('Failed to switch wallet', error: e);
       if (mounted) {
-        _showSnackBar('Failed to switch: $e', Colors.red);
+        _showSnackBar('Failed to switch wallet', Colors.red);
+      }
+    }
+  }
+
+  /// Switch to a passkey wallet: derive the seed first (triggers platform
+  /// prompt), cache it, then activate the wallet. If the user cancels the
+  /// prompt, nothing changes — the active wallet stays as-is.
+  Future<void> _switchToPasskeyWallet(WalletMetadata wallet) async {
+    try {
+      log.i('Deriving seed for passkey wallet before switching: ${wallet.id}');
+      final PasskeyPrfProvider prfProvider = PasskeyPrfProvider(
+        const PasskeyPrfProviderOptions(rpName: 'Glow', userName: 'Glow', userDisplayName: 'Glow'),
+      );
+      final Passkey passkey = Passkey(
+        derivePrfSeed: prfProvider.derivePrfSeed,
+        isPrfAvailable: prfProvider.isPrfAvailable,
+      );
+      final Wallet derived = await passkey.getWallet(label: wallet.passkeyLabel ?? 'Default');
+
+      // Seed derived successfully — cache it so sdkProvider doesn't prompt again
+      PasskeySeedCache.put(derived.seed);
+
+      await ref.read(activeWalletProvider.notifier).switchWallet(wallet.id);
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, AppRoutes.homeScreen, (_) => false);
+        Future<void>.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            _showSnackBar('Switched to ${wallet.displayName}', Colors.green);
+          }
+        });
+      }
+    } on PasskeyError catch (e) {
+      // User cancelled — silently stay on wallet list
+      final bool cancelled = switch (e) {
+        PasskeyError_PrfError(:final PasskeyPrfError field0) => switch (field0) {
+            PasskeyPrfError_UserCancelled() => true,
+            _ => false,
+          },
+        _ => false,
+      };
+      if (cancelled) {
+        log.d('Wallet switch cancelled by user');
+        if (mounted) {
+          _showSnackBar('Wallet switch cancelled', Colors.orange);
+        }
+      } else {
+        log.e('Passkey auth failed during wallet switch', error: e);
+        if (mounted) {
+          _showSnackBar('Passkey authentication failed', Colors.red);
+        }
+      }
+    } catch (e) {
+      log.e('Failed to switch wallet', error: e);
+      if (mounted) {
+        _showSnackBar('Failed to switch wallet', Colors.red);
       }
     }
   }

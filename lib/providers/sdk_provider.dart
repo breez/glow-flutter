@@ -123,8 +123,7 @@ final FutureProvider<BreezSdk> sdkProvider = FutureProvider<BreezSdk>((Ref ref) 
           seed = wallet.seed;
         } on PasskeyError catch (e) {
           log.e('Passkey authentication failed during SDK connect', error: e);
-          await ref.read(activeWalletProvider.notifier).clearActiveWallet();
-          throw Exception('Passkey authentication required. Please select a wallet again.');
+          throw Exception('Passkey authentication cancelled.');
         }
       }
   }
