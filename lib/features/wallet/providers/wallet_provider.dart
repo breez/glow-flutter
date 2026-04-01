@@ -55,7 +55,7 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
   /// Create a wallet using platform passkey PRF.
   ///
   /// Uses [PasskeyPrfProvider] to derive a seed from the device passkey.
-  /// If no passkey exists for the RP ID, one is registered automatically.
+  /// Assumes a passkey already exists for the RP ID.
   Future<WalletMetadata> createWalletWithPasskey({Profile? profile}) async {
     try {
       final Profile walletProfile = profile ?? generateProfile();
@@ -64,6 +64,7 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
       final PasskeyPrfProvider prfProvider = PasskeyPrfProvider(
         const PasskeyPrfProviderOptions(rpName: 'Glow', userName: 'Glow', userDisplayName: 'Glow'),
       );
+
       final Passkey passkey = Passkey(
         derivePrfSeed: prfProvider.derivePrfSeed,
         isPrfAvailable: prfProvider.isPrfAvailable,
