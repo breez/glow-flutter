@@ -55,9 +55,7 @@ class _RegisterButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: themeData.colorScheme.secondary,
-          elevation: 0.0,
           disabledBackgroundColor: themeData.disabledColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         ),
         onPressed: state.isLoading ? null : onRegister,
         child: state.isLoading

@@ -1,6 +1,8 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/core/services/transaction_formatter.dart';
+import 'package:glow/features/deposits/models/pending_deposit_payment.dart';
+import 'package:glow/features/deposits/providers/pending_deposits_provider.dart';
 import 'package:glow/features/transaction_filter/models/transaction_filter_state.dart';
 import 'package:glow/features/transaction_filter/providers/transaction_filter_provider.dart';
 import 'package:glow/features/transactions/models/transaction_list_state.dart';
@@ -37,11 +39,15 @@ final Provider<AsyncValue<List<Payment>>> filteredPaymentsProvider =
 
 /// Provider for TransactionListState
 /// Converts raw payments from sdk_provider to formatted TransactionListState
+/// Also includes pending deposits awaiting fee acceptance
 final Provider<TransactionListState> transactionListStateProvider = Provider<TransactionListState>((
   Ref ref,
 ) {
   final TransactionFormatter formatter = const TransactionFormatter();
   final AsyncValue<List<Payment>> filteredPaymentsAsync = ref.watch(filteredPaymentsProvider);
+  final AsyncValue<List<PendingDepositPayment>> pendingDepositsAsync = ref.watch(
+    nonRejectedPendingDepositsProvider,
+  );
   final AsyncValue<WalletMetadata?> activeWallet = ref.watch(activeWalletProvider);
   final TransactionFilterState filterState = ref.watch(transactionFilterProvider);
 
@@ -59,15 +65,32 @@ final Provider<TransactionListState> transactionListStateProvider = Provider<Tra
       final Profile? profile = activeWallet.value?.profile;
       final bool effectiveHasSynced = hasActiveFilter ? true : (shouldWait ? hasSynced : true);
 
-      // If no payments, return empty state
-      if (filteredPayments.isEmpty) {
+      // Get pending deposits
+      final List<PendingDepositPayment> pendingDeposits =
+          pendingDepositsAsync.value ?? <PendingDepositPayment>[];
+
+      // If no payments and no pending deposits, return empty state
+      if (filteredPayments.isEmpty && pendingDeposits.isEmpty) {
         return TransactionListState.empty(hasActiveFilter: hasActiveFilter);
       }
 
       // Map payments to transaction items
-      final List<TransactionItemState> transactionItems = filteredPayments.map((Payment payment) {
+      final List<TransactionItemState> paymentItems = filteredPayments.map((Payment payment) {
         return _createTransactionItemState(payment, formatter, profile: profile);
       }).toList();
+
+      // Map pending deposits to transaction items
+      final List<TransactionItemState> depositItems = pendingDeposits.map((
+        PendingDepositPayment deposit,
+      ) {
+        return _createPendingDepositItemState(deposit, formatter);
+      }).toList();
+
+      // Combine and sort by timestamp (pending deposits first, then payments)
+      final List<TransactionItemState> transactionItems = <TransactionItemState>[
+        ...depositItems,
+        ...paymentItems,
+      ];
 
       return TransactionListState.loaded(
         transactions: transactionItems,
@@ -102,6 +125,23 @@ TransactionItemState _createTransactionItemState(
     description: description,
     isReceive: isReceive,
     profile: (isReceive && !hasCustomDescription) ? profile : null,
+  );
+}
+
+/// Creates TransactionItemState from PendingDepositPayment
+TransactionItemState _createPendingDepositItemState(
+  PendingDepositPayment deposit,
+  TransactionFormatter formatter,
+) {
+  return TransactionItemState(
+    formattedAmount: formatter.formatSats(deposit.amountSats),
+    formattedAmountWithSign: '+${formatter.formatSats(deposit.amountSats)}',
+    formattedTime: '',
+    formattedStatus: 'Pending Approval',
+    formattedMethod: 'On-chain',
+    description: 'Bitcoin Transaction',
+    isReceive: true,
+    pendingDeposit: deposit,
   );
 }
 

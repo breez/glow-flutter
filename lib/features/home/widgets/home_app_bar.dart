@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:glow/features/deposits/models/pending_deposit_payment.dart';
+import 'package:glow/features/deposits/providers/pending_deposits_provider.dart';
 import 'package:glow/features/wallet/models/wallet_metadata.dart';
 import 'package:glow/routing/app_routes.dart';
-import 'package:glow/providers/sdk_provider.dart';
 import 'package:glow/features/wallet/providers/wallet_provider.dart';
 import 'package:glow/features/wallet/services/wallet_storage_service.dart';
 
@@ -42,26 +43,24 @@ class _UnclaimedDepositsWarning extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<bool> hasUnclaimedAsync = ref.watch(hasUnclaimedDepositsProvider);
-    final AsyncValue<int> countAsync = ref.watch(unclaimedDepositsCountProvider);
+    // Show warning icon for deposits needing attention (rejected or no fee requirement)
+    final AsyncValue<List<PendingDepositPayment>> depositsNeedingAttentionAsync = ref.watch(
+      depositsNeedingAttentionProvider,
+    );
 
-    return hasUnclaimedAsync.when(
-      data: (bool hasUnclaimed) {
-        if (!hasUnclaimed) {
+    return depositsNeedingAttentionAsync.when(
+      data: (List<PendingDepositPayment> deposits) {
+        if (deposits.isEmpty) {
           return const SizedBox.shrink();
         }
 
-        return countAsync.when(
-          data: (int count) => IconButton(
-            icon: Badge(
-              label: Text(count.toString()),
-              child: const Icon(Icons.warning_amber_rounded),
-            ),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.unclaimedDeposits),
-            tooltip: 'Pending deposits',
+        return IconButton(
+          icon: Icon(
+            Icons.warning_amber_rounded,
+            color: Theme.of(context).appBarTheme.iconTheme?.color,
           ),
-          loading: () => const SizedBox.shrink(),
-          error: (_, _) => const SizedBox.shrink(),
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.refunds),
+          tooltip: 'Deposits need attention - ${deposits.length}',
         );
       },
       loading: () => const SizedBox.shrink(),

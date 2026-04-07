@@ -6,12 +6,17 @@ class MaxFeeBottomSheet extends StatefulWidget {
   final MaxFee currentFee;
   final Function(MaxFee) onSave;
   final VoidCallback onReset;
+  // Recommended fees to show as guide markers
+  final BigInt? requiredFeeRate;
+  final BigInt? requiredFeeSats;
 
   const MaxFeeBottomSheet({
     required this.currentFee,
     required this.onSave,
     required this.onReset,
     super.key,
+    this.requiredFeeRate,
+    this.requiredFeeSats,
   });
 
   @override
@@ -22,16 +27,39 @@ class _MaxFeeBottomSheetState extends State<MaxFeeBottomSheet> {
   late bool _useFixedFee;
   late double _sliderValue;
 
-  // Predefined rate options (1-10 sat/vByte)
+  // Base rate options (1-10 sat/vByte)
   static const double _minRate = 1.0;
-  static const double _maxRate = 10.0;
+  static const double _baseMaxRate = 10.0;
 
-  // Predefined fixed fee options (100-1000 sats)
+  // Base fixed fee options (100-1000 sats)
   static const double _minFixed = 100.0;
-  static const double _maxFixed = 1000.0;
+  static const double _baseMaxFixed = 1000.0;
 
   // Conversion factor: assuming ~100 vBytes for a typical transaction
   static const double _conversionFactor = 100.0;
+
+  // Dynamic max values that adjust based on required fees
+  double get _maxRate {
+    if (widget.requiredFeeRate != null) {
+      final double required = widget.requiredFeeRate!.toDouble();
+      // If required exceeds base max, extend to 150% of required (rounded up to next whole number)
+      if (required > _baseMaxRate) {
+        return (required * 1.5).ceilToDouble();
+      }
+    }
+    return _baseMaxRate;
+  }
+
+  double get _maxFixed {
+    if (widget.requiredFeeSats != null) {
+      final double required = widget.requiredFeeSats!.toDouble();
+      // If required exceeds base max, extend to 150% of required (rounded up to nearest 100)
+      if (required > _baseMaxFixed) {
+        return ((required * 1.5 + 99) ~/ 100 * 100).toDouble();
+      }
+    }
+    return _baseMaxFixed;
+  }
 
   @override
   void initState() {
@@ -228,22 +256,156 @@ class _MaxFeeBottomSheetState extends State<MaxFeeBottomSheet> {
 
                 const SizedBox(height: 32),
 
-                // Slider
+                // Slider with optional guide marker
                 Column(
                   children: <Widget>[
-                    Slider(
-                      activeColor: Theme.of(context).primaryColorLight.withValues(alpha: 0.75),
-                      thumbColor: Theme.of(context).primaryColorLight,
-                      value: _sliderValue,
-                      min: _useFixedFee ? _minFixed : _minRate,
-                      max: _useFixedFee ? _maxFixed : _maxRate,
-                      divisions: _useFixedFee ? 18 : 9,
-                      label: _feeDescription,
-                      onChanged: (double value) {
-                        setState(() {
-                          _sliderValue = value;
-                        });
-                      },
+                    Stack(
+                      alignment: Alignment.centerLeft,
+                      children: <Widget>[
+                        // Guide marker (if required fee rate is provided and we're in rate mode)
+                        if (widget.requiredFeeRate != null && !_useFixedFee)
+                          Positioned.fill(
+                            child: LayoutBuilder(
+                              builder: (BuildContext context, BoxConstraints constraints) {
+                                final double requiredRate = widget.requiredFeeRate!.toDouble();
+                                final double position =
+                                    ((requiredRate - _minRate) / (_maxRate - _minRate)).clamp(
+                                      0.0,
+                                      1.0,
+                                    );
+                                final double leftPosition =
+                                    position * (constraints.maxWidth - 48) + 24;
+
+                                return Stack(
+                                  children: <Widget>[
+                                    Positioned(
+                                      left: leftPosition,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        width: 2,
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.tertiary.withValues(alpha: 0.5),
+                                          borderRadius: BorderRadius.circular(1),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: leftPosition - 20,
+                                      bottom: 30,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.tertiaryContainer.withValues(
+                                            alpha: 0.25,
+                                          ),
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: Border.all(
+                                            color: theme.colorScheme.tertiary.withValues(
+                                              alpha: 0.5,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${requiredRate.round()}',
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            color: theme.colorScheme.onTertiaryContainer,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        // Guide marker (if required fee sats is provided and we're in fixed mode)
+                        if (widget.requiredFeeSats != null && _useFixedFee)
+                          Positioned.fill(
+                            child: LayoutBuilder(
+                              builder: (BuildContext context, BoxConstraints constraints) {
+                                final double requiredFixed = widget.requiredFeeSats!.toDouble();
+                                final double position =
+                                    ((requiredFixed - _minFixed) / (_maxFixed - _minFixed)).clamp(
+                                      0.0,
+                                      1.0,
+                                    );
+                                final double leftPosition =
+                                    position * (constraints.maxWidth - 48) + 24;
+
+                                return Stack(
+                                  children: <Widget>[
+                                    Positioned(
+                                      left: leftPosition,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        width: 2,
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.tertiary.withValues(alpha: 0.5),
+                                          borderRadius: BorderRadius.circular(1),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: leftPosition - 24,
+                                      bottom: 30,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.tertiaryContainer.withValues(
+                                            alpha: 0.25,
+                                          ),
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: Border.all(
+                                            color: theme.colorScheme.tertiary.withValues(
+                                              alpha: 0.5,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${requiredFixed.round()} sats',
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            color: theme.colorScheme.onTertiaryContainer,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+
+                        // Slider
+                        Slider(
+                          activeColor: Theme.of(context).primaryColorLight.withValues(alpha: 0.75),
+                          thumbColor: Theme.of(context).primaryColorLight,
+                          value: _sliderValue,
+                          min: _useFixedFee ? _minFixed : _minRate,
+                          max: _useFixedFee ? _maxFixed : _maxRate,
+                          divisions: _useFixedFee
+                              ? ((_maxFixed - _minFixed) / 50)
+                                    .round() // 50 sats per division
+                              : (_maxRate - _minRate).round(), // 1 sat/vByte per division
+                          label: _feeDescription,
+                          onChanged: (double value) {
+                            setState(() {
+                              _sliderValue = value;
+                            });
+                          },
+                        ),
+                      ],
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -287,7 +449,11 @@ class _MaxFeeBottomSheetState extends State<MaxFeeBottomSheet> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Higher fees ensure deposits are claimed during network congestion',
+                          widget.requiredFeeRate != null && !_useFixedFee
+                              ? 'Recommended: ${widget.requiredFeeRate} sat/vByte or higher to claim this deposit'
+                              : widget.requiredFeeSats != null && _useFixedFee
+                              ? 'Recommended: ${widget.requiredFeeSats} sats or higher to claim this deposit'
+                              : 'Higher fees ensure deposits are claimed during network congestion',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),

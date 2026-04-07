@@ -255,22 +255,55 @@ final Provider<void> sdkEventListenerProvider = Provider<void>((Ref ref) {
   });
 });
 
-/// Provider to list unclaimed deposits
-final FutureProvider<List<DepositInfo>> unclaimedDepositsProvider =
-    FutureProvider<List<DepositInfo>>((Ref ref) async {
-      final BreezSdk sdk = await ref.watch(sdkProvider.future);
-      final BreezSdkService service = ref.read(breezSdkServiceProvider);
+/// Unclaimed deposits notifier - only updates when deposits actually change
+class UnclaimedDepositsNotifier extends AsyncNotifier<List<DepositInfo>> {
+  @override
+  Future<List<DepositInfo>> build() async {
+    final BreezSdk sdk = await ref.watch(sdkProvider.future);
+    final BreezSdkService service = ref.read(breezSdkServiceProvider);
 
-      // Watch the event stream to know when to refresh
-      // This creates a dependency on the stream but doesn't create circular invalidation
-      ref.watch(sdkEventsStreamProvider);
-
-      final List<DepositInfo> deposits = await service.listUnclaimedDeposits(sdk);
-      if (deposits.isNotEmpty) {
-        log.d('Unclaimed deposits: ${deposits.length}');
-      }
-      return deposits;
+    // Watch the event stream to trigger refresh checks
+    ref.listen(sdkEventsStreamProvider, (
+      AsyncValue<SdkEvent>? previous,
+      AsyncValue<SdkEvent> next,
+    ) {
+      next.whenData((SdkEvent event) {
+        if (event is SdkEvent_UnclaimedDeposits || event is SdkEvent_Synced) {
+          refreshIfChanged();
+        }
+      });
     });
+
+    final List<DepositInfo> deposits = await service.listUnclaimedDeposits(sdk);
+    if (deposits.isNotEmpty) {
+      log.d('Unclaimed deposits: ${deposits.length}');
+    }
+    return deposits;
+  }
+
+  Future<void> refreshIfChanged() async {
+    if (!state.hasValue) {
+      return;
+    }
+
+    final BreezSdk sdk = await ref.read(sdkProvider.future);
+    final BreezSdkService service = ref.read(breezSdkServiceProvider);
+    final List<DepositInfo> newDeposits = await service.listUnclaimedDeposits(sdk);
+
+    // Compare deposits using DeepCollectionEquality
+    final bool hasChanged = !const DeepCollectionEquality().equals(state.value, newDeposits);
+
+    if (hasChanged) {
+      log.d('Deposits changed, updating state');
+      state = AsyncData<List<DepositInfo>>(newDeposits);
+    }
+  }
+}
+
+final AsyncNotifierProvider<UnclaimedDepositsNotifier, List<DepositInfo>>
+unclaimedDepositsProvider = AsyncNotifierProvider<UnclaimedDepositsNotifier, List<DepositInfo>>(
+  UnclaimedDepositsNotifier.new,
+);
 
 /// Check if there are any unclaimed deposits that need attention
 final Provider<AsyncValue<bool>> hasUnclaimedDepositsProvider = Provider<AsyncValue<bool>>((

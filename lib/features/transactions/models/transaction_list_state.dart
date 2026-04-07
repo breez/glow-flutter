@@ -1,11 +1,12 @@
 import 'package:breez_sdk_spark_flutter/breez_sdk_spark.dart';
 import 'package:equatable/equatable.dart';
+import 'package:glow/features/deposits/models/pending_deposit_payment.dart';
 import 'package:glow/features/profile/models/profile.dart';
 
 /// State representation for a single transaction item
+/// Can represent either a Payment or a PendingDepositPayment
 class TransactionItemState extends Equatable {
   const TransactionItemState({
-    required this.payment,
     required this.formattedAmount,
     required this.formattedAmountWithSign,
     required this.formattedTime,
@@ -13,10 +14,16 @@ class TransactionItemState extends Equatable {
     required this.formattedMethod,
     required this.description,
     required this.isReceive,
+    this.payment,
+    this.pendingDeposit,
     this.profile,
-  });
+  }) : assert(
+         payment != null || pendingDeposit != null,
+         'Either payment or pendingDeposit must be provided',
+       );
 
-  final Payment payment;
+  final Payment? payment;
+  final PendingDepositPayment? pendingDeposit;
   final String formattedAmount;
   final String formattedAmountWithSign;
   final String formattedTime;
@@ -26,9 +33,16 @@ class TransactionItemState extends Equatable {
   final bool isReceive;
   final Profile? profile;
 
+  /// Check if this is a pending deposit transaction
+  bool get isPendingDeposit => pendingDeposit != null;
+
+  /// Get unique identifier (payment ID or deposit ID)
+  String get id => payment?.id ?? pendingDeposit!.id;
+
   @override
   List<Object?> get props => <Object?>[
-    payment.id,
+    payment?.id,
+    pendingDeposit?.id,
     formattedAmount,
     formattedAmountWithSign,
     formattedTime,

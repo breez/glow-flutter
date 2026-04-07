@@ -22,16 +22,16 @@ class DataActionButtonTheme {
 }
 
 class DataActionButton extends StatelessWidget {
-  final Widget icon;
+  final Widget? icon;
   final String label;
   final VoidCallback onPressed;
   final String? tooltip;
   final AutoSizeGroup? textGroup;
 
   const DataActionButton({
-    required this.icon,
     required this.label,
     required this.onPressed,
+    this.icon,
     this.tooltip,
     this.textGroup,
     super.key,
@@ -43,18 +43,30 @@ class DataActionButton extends StatelessWidget {
       constraints: DataActionButtonTheme.constraints,
       child: Tooltip(
         message: tooltip ?? label,
-        child: OutlinedButton.icon(
-          style: DataActionButtonTheme.buttonStyle,
-          icon: icon,
-          label: AutoSizeText(
-            label,
-            style: DataActionButtonTheme.textStyle,
-            maxLines: 1,
-            group: textGroup,
-            stepGranularity: 0.1,
-          ),
-          onPressed: onPressed,
-        ),
+        child: icon != null
+            ? OutlinedButton.icon(
+                style: DataActionButtonTheme.buttonStyle,
+                icon: icon,
+                label: AutoSizeText(
+                  label,
+                  style: DataActionButtonTheme.textStyle,
+                  maxLines: 1,
+                  group: textGroup,
+                  stepGranularity: 0.1,
+                ),
+                onPressed: onPressed,
+              )
+            : OutlinedButton(
+                style: DataActionButtonTheme.buttonStyle,
+                onPressed: onPressed,
+                child: AutoSizeText(
+                  label,
+                  style: DataActionButtonTheme.textStyle,
+                  maxLines: 1,
+                  group: textGroup,
+                  stepGranularity: 0.1,
+                ),
+              ),
       ),
     );
   }

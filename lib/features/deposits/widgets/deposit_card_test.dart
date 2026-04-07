@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glow/features/deposits/providers/deposit_claimer.dart';
 import 'package:glow/features/deposits/widgets/deposit_card.dart';
-import 'package:glow/features/deposits/models/unclaimed_deposits_state.dart';
 import 'package:glow/widgets/warning_box.dart';
+import 'package:glow/features/deposits/models/unclaimed_deposits_state.dart';
 
 void main() {
   group('DepositCard', () {
@@ -50,7 +50,7 @@ void main() {
       DepositInfo deposit, {
       Key? cardKey,
       VoidCallback? onRetryClaim,
-      VoidCallback? onShowRefundInfo,
+      VoidCallback? onRefund,
       VoidCallback? onCopyTxid,
     }) {
       final DepositCardData cardData = cardDataFromDeposit(deposit);
@@ -62,7 +62,7 @@ void main() {
         formattedTxid: cardData.formattedTxid,
         formattedErrorMessage: cardData.formattedErrorMessage,
         onRetryClaim: onRetryClaim ?? () {},
-        onShowRefundInfo: onShowRefundInfo ?? () {},
+        onRefund: onRefund ?? () {},
         onCopyTxid: onCopyTxid ?? () {},
       );
     }
@@ -192,7 +192,7 @@ void main() {
               deposit,
               cardKey: cardKey,
               onRetryClaim: () {},
-              onShowRefundInfo: () {},
+              onRefund: () {},
               onCopyTxid: () {},
             ),
           ),
@@ -279,7 +279,7 @@ void main() {
           makeTestable(
             makeDepositCard(
               deposit,
-              onShowRefundInfo: () {
+              onRefund: () {
                 callbackCalled = true;
               },
             ),

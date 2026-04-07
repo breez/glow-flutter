@@ -239,3 +239,90 @@ class UserNotifier extends AsyncNotifier<User> {
 // Usage
 ref.watch(userProvider(42));  // Returns AsyncValue<User>
 ```
+
+### Logging Patterns
+
+We use the `AppLogger` system for structured logging throughout the application. There are two approaches depending on the class type:
+
+#### Use LoggerMixin for Instance-Based Classes
+
+Use `LoggerMixin` for classes that have instances where you can access instance members:
+- Services
+- Widgets
+- Notifiers
+- Controllers
+
+**Example:**
+```dart
+import 'package:glow/logging/logger_mixin.dart';
+
+class DepositClaimer with LoggerMixin {
+  Future<void> claimDeposit(String txid) async {
+    log.i('Claiming deposit: $txid');
+    try {
+      // ... claim logic
+      log.d('Deposit claimed successfully');
+    } catch (e, stack) {
+      log.e('Failed to claim deposit', error: e, stackTrace: stack);
+    }
+  }
+}
+```
+
+#### Use Module-Level Loggers for Static/Immutable Classes
+
+Use module-level loggers for classes where `LoggerMixin` cannot be applied:
+- Static methods
+- Immutable data classes (extending `Equatable`)
+- Classes with only static factory methods
+- Top-level functions
+
+**Example:**
+```dart
+import 'package:glow/logging/app_logger.dart';
+import 'package:logger/logger.dart';
+
+final Logger _log = AppLogger.getLogger('PendingDepositPayment');
+
+class PendingDepositPayment extends Equatable {
+  const PendingDepositPayment({required this.deposit});
+
+  final DepositInfo deposit;
+
+  static PendingDepositPayment? fromDepositInfo(DepositInfo deposit) {
+    _log.d('Creating pending deposit from: ${deposit.txid}');
+
+    if (deposit.claimError != null) {
+      _log.w('Deposit has claim error: ${deposit.claimError}');
+    }
+
+    return PendingDepositPayment(deposit: deposit);
+  }
+
+  @override
+  List<Object?> get props => <Object?>[deposit];
+}
+```
+
+#### Log Levels
+
+Use appropriate log levels:
+- `log.d()` - Debug: Detailed information for debugging (e.g., "Deposit has no claim error, can be auto-claimed")
+- `log.i()` - Info: General informational messages (e.g., "Deposit claimed successfully", "Missing UTXO")
+- `log.w()` - Warning: Potentially problematic situations (e.g., "Max fee exceeded", "Generic error")
+- `log.e()` - Error: Error events that might still allow the app to continue (e.g., "Failed to claim deposit")
+
+**Example:**
+```dart
+// Debug - detailed diagnostic info
+_log.d('Deposit $depositId has no claim error, can be auto-claimed');
+
+// Info - important events
+_log.i('Deposit $depositId: missingUtxo - UTXO not yet visible on network');
+
+// Warning - something unusual but handled
+_log.w('Deposit $depositId: maxDepositClaimFeeExceeded - requiredFee: $requiredFeeSats sats');
+
+// Error - operation failed
+_log.e('Failed to claim deposit: ${deposit.id}', error: e, stackTrace: stack);
+```
