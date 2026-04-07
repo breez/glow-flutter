@@ -21,6 +21,7 @@ class RefundLayout extends StatefulWidget {
   final VoidCallback onSendRefund;
   final void Function(String address) onRetry;
   final VoidCallback onCancel;
+  final String? Function(BigInt sats)? formatSatsAsFiat;
 
   const RefundLayout({
     required this.state,
@@ -29,6 +30,7 @@ class RefundLayout extends StatefulWidget {
     required this.onSendRefund,
     required this.onRetry,
     required this.onCancel,
+    this.formatSatsAsFiat,
     super.key,
   });
 
@@ -179,8 +181,6 @@ class _AddressInputForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Theme.of(context);
-
     return CardWrapper(
       child: Form(
         key: formKey,
@@ -312,6 +312,7 @@ class _FeeSelectionView extends StatelessWidget {
           deposit: state.deposit,
           feeSats: state.estimatedFeeSats,
           selectedSpeed: state.selectedSpeed,
+          formatSatsAsFiat: widget.formatSatsAsFiat,
         ),
       ],
     );
@@ -469,11 +470,13 @@ class _RefundBreakdownCard extends StatelessWidget {
   final DepositInfo deposit;
   final BigInt feeSats;
   final RefundFeeSpeed selectedSpeed;
+  final String? Function(BigInt sats)? formatSatsAsFiat;
 
   const _RefundBreakdownCard({
     required this.deposit,
     required this.feeSats,
     required this.selectedSpeed,
+    this.formatSatsAsFiat,
   });
 
   @override
@@ -496,7 +499,7 @@ class _RefundBreakdownCard extends StatelessWidget {
                       style: TextStyle(color: Colors.white, fontSize: 18.0),
                     ),
                     Text(
-                      '${formatSats(deposit.amountSats)} sats (\$${_formatUSD(deposit.amountSats)})',
+                      _formatAmount(deposit.amountSats),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                         fontSize: 14.0,
@@ -534,7 +537,7 @@ class _RefundBreakdownCard extends StatelessWidget {
                       style: TextStyle(color: Colors.white, fontSize: 18.0),
                     ),
                     Text(
-                      '${formatSats(recipientReceives)} sats (\$${_formatUSD(recipientReceives)})',
+                      _formatAmount(recipientReceives),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                         fontSize: 14.0,
@@ -558,10 +561,12 @@ class _RefundBreakdownCard extends StatelessWidget {
     );
   }
 
-  String _formatUSD(BigInt sats) {
-    // Placeholder - this should use actual exchange rate
-    // For now, approximating $1 = 1000 sats for demo
-    final double usd = sats.toDouble() / 1000;
-    return usd.toStringAsFixed(2);
+  String _formatAmount(BigInt sats) {
+    final String satsFormatted = '${formatSats(sats)} sats';
+    final String? fiatFormatted = formatSatsAsFiat?.call(sats);
+    if (fiatFormatted != null) {
+      return '$satsFormatted ($fiatFormatted)';
+    }
+    return satsFormatted;
   }
 }

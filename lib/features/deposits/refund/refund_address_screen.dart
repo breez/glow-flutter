@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:glow/features/deposits/providers/refund_provider.dart';
 import 'package:glow/features/deposits/refund/refund_layout.dart';
 import 'package:glow/features/deposits/refund/refund_state.dart';
+import 'package:glow/features/fiat_currencies/providers/fiat_currency_provider.dart';
 import 'package:glow/logging/app_logger.dart';
 import 'package:logger/logger.dart';
 
@@ -47,6 +48,9 @@ class RefundScreen extends ConsumerWidget {
       onRetry: (String address) =>
           ref.read(refundProvider(deposit).notifier).prepareRefund(address),
       onCancel: () => Navigator.of(context).pop(),
+      formatSatsAsFiat: ref.watch(fiatCurrencyProvider).valueOrNull != null
+          ? (BigInt sats) => ref.read(fiatCurrencyProvider.notifier).formatSatsAsFiat(sats)
+          : null,
     );
   }
 }

@@ -106,6 +106,8 @@ class DepositApprovalScreen extends ConsumerWidget {
 
       if (context.mounted) {
         Navigator.of(context).pop(); // Close loading dialog
+      }
+      if (context.mounted) {
         Navigator.of(context).pop(); // Close approval screen
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
