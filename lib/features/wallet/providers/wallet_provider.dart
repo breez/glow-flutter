@@ -6,6 +6,7 @@ import 'package:glow/features/wallet/services/mnemonic_service.dart';
 import 'package:glow/features/wallet/services/wallet_storage_service.dart';
 import 'package:glow/features/profile/models/profile.dart';
 import 'package:glow/features/profile/provider/profile_provider.dart';
+import 'package:glow/utils/wallet_id.dart';
 import 'package:logger/logger.dart';
 
 final Logger log = AppLogger.getLogger('WalletProvider');
@@ -35,7 +36,7 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
       log.i('Creating new wallet: ${walletProfile.displayName} on ${network.name}');
 
       final String mnemonic = _mnemonicService!.generateMnemonic();
-      final String walletId = Seed.mnemonic(mnemonic: mnemonic).computeId();
+      final String walletId = computeWalletId(Seed.mnemonic(mnemonic: mnemonic));
       final WalletMetadata wallet = WalletMetadata(id: walletId, profile: walletProfile);
 
       await _storage!.addWallet(wallet, mnemonic);
@@ -114,7 +115,7 @@ class WalletListNotifier extends AsyncNotifier<List<WalletMetadata>> {
         throw Exception('Invalid mnemonic: $error');
       }
 
-      final String walletId = Seed.mnemonic(mnemonic: normalized).computeId();
+      final String walletId = computeWalletId(Seed.mnemonic(mnemonic: normalized));
       final List<WalletMetadata> existingWallets = state.value ?? <WalletMetadata>[];
 
       if (existingWallets.any((WalletMetadata w) => w.id == walletId)) {

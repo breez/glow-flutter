@@ -8,6 +8,7 @@ import 'package:glow/features/profile/models/profile.dart';
 import 'package:glow/features/profile/provider/profile_provider.dart';
 import 'package:glow/features/wallet/services/wallet_storage_service.dart';
 import 'package:glow/providers/sdk_provider.dart' show PasskeySeedCache;
+import 'package:glow/utils/wallet_id.dart';
 import 'package:logger/logger.dart';
 
 final Logger _log = AppLogger.getLogger('PasskeyOnboarding');
@@ -237,7 +238,7 @@ class OnboardingStateNotifier extends Notifier<OnboardingState> {
       final Stopwatch sw = Stopwatch()..start();
       final Wallet wallet = await passkey.getWallet(label: label);
       sw.stop();
-      final String walletId = wallet.computeId();
+      final String walletId = computeWalletId(wallet.seed);
       _log.i('[connecting] Wallet derived in ${sw.elapsedMilliseconds}ms, id: $walletId');
 
       // Cache seed so sdkProvider can connect without a second passkey prompt
